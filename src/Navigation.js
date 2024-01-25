@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton,
   Collapse, Toolbar, CssBaseline
@@ -17,9 +17,18 @@ const drawerWidth = 240;
 
 export default function Navigation({ open, handleDrawerToggle }) {
   const [subMenuOpen, setSubMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubMenuClick = () => {
     setSubMenuOpen(!subMenuOpen);
+  };
+
+  const handleLogOut = () => {
+    // Implement log out logic here
+    // For example, clearing authentication tokens or user data
+
+    // Redirect to the login page
+    navigate('/Login'); // Adjust the path to match your routing setup
   };
 
   return (
@@ -82,14 +91,14 @@ export default function Navigation({ open, handleDrawerToggle }) {
               {/* Add additional sub-items if needed */}
             </List>
           </Collapse>
-          {/* Additional navigation items can be added here if needed */}
+          {/* Additional navigation items can be added here */}
           <ListItem button component={Link} to="/accounts">
             <ListItemIcon>
               <AccountBoxIcon />
             </ListItemIcon>
             <ListItemText primary="Accounts" />
           </ListItem>
-          <ListItem button component={Link} to="/logout">
+          <ListItem button onClick={handleLogOut}>
             <ListItemIcon>
               <PowerSettingsNewIcon />
             </ListItemIcon>

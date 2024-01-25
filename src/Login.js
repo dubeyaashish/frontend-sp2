@@ -1,8 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
   const [ID, setID] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('User'); // Default role
+  const navigate = useNavigate();
 
   const handleIDChange = (event) => {
     setID(event.target.value);
@@ -12,40 +15,46 @@ function LoginPage() {
     setPassword(event.target.value);
   };
 
+  const handleRoleChange = (event) => {
+    setRole(event.target.value);
+  };
+
   const handleLogin = (event) => {
     event.preventDefault();
     // Add your login logic here
-    console.log('ID:', ID);
-    console.log('Password:', password);
+    if (role === 'Admin') {
+      navigate('/general');
+    } else if (role === 'User') {
+      navigate('/user-general');
+    }
   };
-
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <label>
-            <input type="text" value={ID} onChange={handleIDChange} placeholder="ID" style={{ width: '293px', height: '36px', marginBottom: '5px', borderRadius: '8px', backgroundColor: '#F6F6F6', outline: 'none' }} />
-          </label>
+          <select value={role} onChange={handleRoleChange} style={{ width: '293px', height: '36px', marginBottom: '5px', borderRadius: '8px', backgroundColor: '#F6F6F6', outline: 'none' }}>
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+          </select>
           <br />
-          <label>
-            <input type="password" value={password} onChange={handlePasswordChange} placeholder="Password" style={{ width: '293px', height: '36px', borderRadius: '8px', backgroundColor: '#F6F6F6', outline: 'none' }} />
-          </label>
+          <input type="text" value={ID} onChange={handleIDChange} placeholder="ID" style={{ width: '293px', height: '36px', marginBottom: '5px', borderRadius: '8px', backgroundColor: '#F6F6F6', outline: 'none' }} />
+          <br />
+          <input type="password" value={password} onChange={handlePasswordChange} placeholder="Password" style={{ width: '293px', height: '36px', borderRadius: '8px', backgroundColor: '#F6F6F6', outline: 'none' }} />
           <br />
           <button type="submit" style={{ width: '320px', height: '40px', backgroundColor: '#4340DA', color: 'white', marginTop: '20px', borderRadius: '8px' }}>Login</button>
         </form>
         <div
           style={{
             position: 'absolute',
-            top: '30%',
+            top: '25%', // Adjusted for positioning
             left: '50%',
             transform: 'translate(-50%, -50%)',
             width: '80px',
             height: '80px',
             borderRadius: '50%',
             backgroundColor: 'gray',
-            backgroundImage: `url("/sunmilogo.png")`, 
-            backgroundSize: 'cover',
+            backgroundImage: `url("/sunmilogo.png")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
