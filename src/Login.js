@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function LoginPage() {
+function LoginPage({ onLoginSuccess }) {
   const [ID, setID] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('User'); // Default role
+  const [role, setRole] = useState('User');
   const navigate = useNavigate();
 
   const handleIDChange = (event) => {
@@ -21,16 +22,17 @@ function LoginPage() {
 
   const handleLogin = (event) => {
     event.preventDefault();
-    // Add your login logic here
+    onLoginSuccess(); // This will update the App's login state
     if (role === 'Admin') {
-      navigate('/general');
-    } else if (role === 'User') {
-      navigate('/user-general');
+      navigate('/'); // Navigate to General Page for Admin
+    } else {
+      navigate('/user-general'); // Navigate to User General Page for User
     }
   };
 
   return (
     <div>
+      <div>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <select value={role} onChange={handleRoleChange} style={{ width: '293px', height: '36px', marginBottom: '5px', borderRadius: '8px', backgroundColor: '#F6F6F6', outline: 'none' }}>
@@ -61,6 +63,7 @@ function LoginPage() {
         >
         </div>
       </div>
+    </div>
     </div>
   );
 }

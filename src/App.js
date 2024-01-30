@@ -1,33 +1,38 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom'; // Import Navigate
+import { Routes, Route, Navigate } from 'react-router-dom';
 import LayoutWithNavigation from './LayoutNavigation';
-import StatusPage from './Status';
 import GeneralPage from './General';
+import StatusPage from './Status';
 import SettingsPage from './Settings';
 import LoginPage from './Login';
 import UserGeneralPage from './UserGeneral';
 
 export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/" element={
-        <LayoutWithNavigation open={drawerOpen} handleDrawerToggle={toggleDrawer}>
-          <Routes> {/* Nested Routes inside LayoutWithNavigation */}
-            <Route index element={<GeneralPage />} />
-            <Route path="status" element={<StatusPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="user-general" element={<UserGeneralPage />} />
-          </Routes>
-        </LayoutWithNavigation>
-      } />
-      <Route path="*" element={<Navigate to="/" replace />} /> {/* Default Route */}
-    </Routes>
+    <LayoutWithNavigation open={drawerOpen} handleDrawerToggle={toggleDrawer} onLogout={handleLogout}>
+      <Routes>
+        <Route path="/" element={<GeneralPage />} />
+        <Route path="/status" element={<StatusPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/user-general" element={<UserGeneralPage />} />
+        <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </LayoutWithNavigation>
   );
 }
