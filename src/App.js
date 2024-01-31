@@ -24,15 +24,20 @@ export default function App() {
   };
 
   return (
-    <LayoutWithNavigation open={drawerOpen} handleDrawerToggle={toggleDrawer} onLogout={handleLogout}>
-      <Routes>
-        <Route path="/" element={<GeneralPage />} />
-        <Route path="/status" element={<StatusPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/user-general" element={<UserGeneralPage />} />
-        <Route path="/login" element={<LoginPage onLoginSuccess={handleLoginSuccess} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </LayoutWithNavigation>
+    <div>
+      {isLoggedIn ? (
+        <LayoutWithNavigation open={drawerOpen} handleDrawerToggle={toggleDrawer} onLogout={handleLogout}>
+          <Routes>
+            <Route path="/" element={<GeneralPage />} />
+            <Route path="/status" element={<StatusPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/user-general" element={<UserGeneralPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </LayoutWithNavigation>
+      ) : (
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
+      )}
+    </div>
   );
 }
