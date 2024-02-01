@@ -26,7 +26,7 @@ function LoginPage({ onLoginSuccess }) {
     if (role === 'Admin') {
       navigate('/'); // Navigate to General Page for Admin
     } else {
-      navigate('/user-general'); // Navigate to User General Page for User
+      navigate('/UserGeneral'); // Navigate to User General Page for User
     }
   };
 

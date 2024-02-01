@@ -24,12 +24,10 @@ export default function Navigation({ open, handleDrawerToggle }) {
   };
 
   const handleLogOut = () => {
-    // Implement log out logic here
-    // For example, clearing authentication tokens or user data
-
-    // Redirect to the login page
-    navigate('/Login'); // Adjust the path to match your routing setup
+    // Temporary redirect to another page within your React app (e.g., '/login')
+    window.location.href = '/login'; // Redirect to the specified route
   };
+  
 
   return (
     <div>
