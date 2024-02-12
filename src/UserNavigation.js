@@ -1,34 +1,23 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton,
-  Collapse, Toolbar, CssBaseline
+  Toolbar, CssBaseline
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import SettingsIcon from '@mui/icons-material/Settings';
-import GroupIcon from '@mui/icons-material/Group';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import DashboardIcon from '@mui/icons-material/Dashboard'; // Assuming this matches the "General" icon
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // Assuming this matches the "Profile" icon
+import HistoryIcon from '@mui/icons-material/History'; // Assuming this matches the "History" icon
+import FolderIcon from '@mui/icons-material/Folder'; // Assuming this matches the "Accounts" icon
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew'; // Assuming this matches the "Log Out" icon
 
 const drawerWidth = 240;
 
 export default function Navigation({ open, handleDrawerToggle }) {
-  const [subMenuOpen, setSubMenuOpen] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubMenuClick = () => {
-    setSubMenuOpen(!subMenuOpen);
-  };
 
   const handleLogOut = () => {
-    // Implement log out logic here
-    // For example, clearing authentication tokens or user data
-
     // Redirect to the login page
-    navigate('/Login'); // Adjust the path to match your routing setup
+    window.location.href = '/login';
   };
 
   return (
@@ -41,6 +30,7 @@ export default function Navigation({ open, handleDrawerToggle }) {
         edge="start"
         sx={{
           marginRight: '36px',
+          ...(open && { display: 'none' }),
           marginLeft: '20px',
           position: 'fixed',
           zIndex: (theme) => theme.zIndex.drawer + 1,
@@ -68,20 +58,26 @@ export default function Navigation({ open, handleDrawerToggle }) {
             <ListItemIcon>
               <DashboardIcon />
             </ListItemIcon>
-            <ListItemText primary="UserGeneral" />
+            <ListItemText primary="General" />
           </ListItem>
           <ListItem button component={Link} to="/profile">
             <ListItemIcon>
-              <SettingsIcon />
+              <AccountCircleIcon />
             </ListItemIcon>
             <ListItemText primary="Profile" />
           </ListItem>
           <ListItem button component={Link} to="/history">
             <ListItemIcon>
-              <GroupIcon />
+              <HistoryIcon />
             </ListItemIcon>
             <ListItemText primary="History" />
-            </ListItem>
+          </ListItem>
+          <ListItem button component={Link} to="/accounts">
+            <ListItemIcon>
+              <FolderIcon />
+            </ListItemIcon>
+            <ListItemText primary="Accounts" />
+          </ListItem>
           <ListItem button onClick={handleLogOut}>
             <ListItemIcon>
               <PowerSettingsNewIcon />

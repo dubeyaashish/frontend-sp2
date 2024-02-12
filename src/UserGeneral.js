@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
-const GeneralPage = () => {
+const UserGeneralPage = () => {
 
   // Mock data for the table
   const mockTableData = [
@@ -76,4 +76,4 @@ const GeneralPage = () => {
   );
 };
 
-export default GeneralPage;
+export default UserGeneralPage;
