@@ -1,58 +1,82 @@
-import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import LayoutWithNavigation from './LayoutNavigation'; // This is for the admin layout
-import UserLayoutWithNavigation from './UserLayoutNavigation'; // This is for the user layout
-import GeneralPage from './General';
-import StatusPage from './Status';
-import SettingsPage from './Settings';
-import LoginPage from './Login';
-import UserGeneralPage from './UserGeneral';
+import React, { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import LayoutWithNavigation from "./LayoutNavigation";
+import GeneralPage from "./General";
+import StatusPage from "./Status";
+import SettingsPage from "./Settings";
+import LoginPage from "./Login";
+import UserGeneralPage from "./UserGeneral";
+import AccountPage from "./Account";
+import CreateAccount from "./CreateAccount";
+import "./../node_modules/bootstrap/dist/css/bootstrap.min.css";
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCAP8DRvSdpG7B0D0Y2PXOONlhtDo1JxZQ",
+  authDomain: "senior2-2e798.firebaseapp.com",
+  databaseURL:
+    "https://senior2-2e798-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "senior2-2e798",
+  storageBucket: "senior2-2e798.appspot.com",
+  messagingSenderId: "675717960941",
+  appId: "1:675717960941:web:45187efb193bae074b68e4",
+  measurementId: "G-BTXE84PLJ8",
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState('');
 
-  const handleLoginSuccess = (role) => {
+  const handleLoginSuccess = () => {
     setIsLoggedIn(true);
-    setUserRole(role);
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setUserRole('');
-    // You should also add logic here to actually log the user out, like clearing tokens or cookies.
   };
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
-  const renderLayout = () => {
-    if (userRole === 'Admin') {
-      return (
-        <LayoutWithNavigation open={drawerOpen} handleDrawerToggle={toggleDrawer} onLogout={handleLogout}>
+  return (
+    <div>
+      {isLoggedIn ? (
+        <LayoutWithNavigation
+          open={drawerOpen}
+          handleDrawerToggle={toggleDrawer}
+          onLogout={handleLogout}
+        >
           <Routes>
             <Route path="/" element={<GeneralPage />} />
             <Route path="/status" element={<StatusPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            {/* Redirect any other path to "/" */}
+            <Route path="/account" element={<AccountPage />} />
+            <Route path="/create-account" element={<CreateAccount />} /> {/* Route for CreateAccount */}
+            <Route path="/user-general" element={<UserGeneralPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </LayoutWithNavigation>
-      );
-    } else { // Assumes any non-admin user will use the UserLayout
-      return (
-        <UserLayoutWithNavigation open={drawerOpen} handleDrawerToggle={toggleDrawer} onLogout={handleLogout}>
-          <Routes>
-            <Route path="/" element={<UserGeneralPage />} />
-            {/* Redirect any other path to "/" */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </UserLayoutWithNavigation>
-      );
-    }
-  };
-
-  return <div>{isLoggedIn ? renderLayout() : <LoginPage onLoginSuccess={handleLoginSuccess} />}</div>;
+      ) : (
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
+      )}
+    </div>
+  );
 }

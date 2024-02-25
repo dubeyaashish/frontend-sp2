@@ -27,7 +27,6 @@ export default function Navigation({ open, handleDrawerToggle }) {
     // Temporary redirect to another page within your React app (e.g., '/login')
     window.location.href = '/login'; // Redirect to the specified route
   };
-  
 
   return (
     <div>
@@ -90,11 +89,11 @@ export default function Navigation({ open, handleDrawerToggle }) {
             </List>
           </Collapse>
           {/* Additional navigation items can be added here */}
-          <ListItem button component={Link} to="/accounts">
+          <ListItem button component={Link} to="/account"> {/* Updated Link for Account */}
             <ListItemIcon>
               <AccountBoxIcon />
             </ListItemIcon>
-            <ListItemText primary="Accounts" />
+            <ListItemText primary="Account" />
           </ListItem>
           <ListItem button onClick={handleLogOut}>
             <ListItemIcon>
