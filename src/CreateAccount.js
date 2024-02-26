@@ -3,6 +3,8 @@ import { Box, Container, TextField, Button, Typography, FormControl, InputLabel,
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+
 
 
 
@@ -77,11 +79,16 @@ const CreateAccount = () => {
     },
   }));
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    // Implement submission logic here...
-    console.log(account);
-    // navigate('/accounts'); // Navigate to accounts listing page after submission
+    const db = getFirestore();
+    try {
+      const docRef = await addDoc(collection(db, "accounts"), account);
+      console.log("Document written with ID: ", docRef.id);
+      // navigate('/accounts'); // Navigate to accounts listing page after submission
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
   };
 
   return (
