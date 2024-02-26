@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
+import React, { useState, useRef } from 'react';
+import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar, IconButton } from '@mui/material';
+import UploadIcon from '@mui/icons-material/Upload';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { initializeApp } from 'firebase/app';
+import firebaseConfig from './firebase/config';
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+
+
 
 const CreateAccount = () => {
   const navigate = useNavigate();
@@ -19,12 +28,37 @@ const CreateAccount = () => {
     emergencyPhone: '',
     emergencyRelation: '',
     accountStatus: '',
+    profilePicture: '',
   });
+  
+  const fileInputRef = useRef();
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setAccount({ ...account, [name]: value });
   };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const storage = getStorage();
+      const storageRef = ref(storage, `profile_pictures/${file.name}`);
+  
+      uploadBytes(storageRef, file).then((snapshot) => {
+        getDownloadURL(snapshot.ref).then((downloadURL) => {
+          setAccount({ ...account, profilePicture: downloadURL });
+        });
+      }).catch((error) => {
+        console.error('Error uploading file:', error);
+      });
+    }
+  };
+  
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
 
   // Function to change background color based on account status
   const getStatusColor = (status) => {
@@ -56,6 +90,28 @@ const CreateAccount = () => {
   };
 
   return (
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Create Account
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+          <Avatar
+            src={account.profilePicture ? account.profilePicture : ''}
+            sx={{ width: 56, height: 56, marginRight: 2 }}
+          />
+          <IconButton color="primary" aria-label="upload picture" component="span" onClick={triggerFileInput}>
+            <UploadIcon />
+          </IconButton>
+          <input
+            type="file"
+            hidden
+            onChange={handleImageChange}
+            ref={fileInputRef}
+          />
+        </Box>
+      
+    
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
         Create Account
@@ -227,7 +283,8 @@ const CreateAccount = () => {
         </Box>
       </Box>
     </Container>
-      
+    </Box>
+    </Container>
   );
 };
 
