@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar, IconButton } from '@mui/material';
+import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar,
+   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, addDoc  } from 'firebase/firestore';
 
 
 
@@ -57,6 +58,10 @@ const CreateAccount = () => {
   };
 
 
+  const [openDialog, setOpenDialog] = useState(false);
+
+
+
   // Function to change background color based on account status
   const getStatusColor = (status) => {
     switch (status) {
@@ -82,16 +87,25 @@ const CreateAccount = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const db = getFirestore();
+    const q = query(collection(db, "accounts"), where("employeeId", "==", account.employeeId));
+  
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+      alert("Employee ID already exists!");
+      return;
+    }
+  
     try {
-      const docRef = await addDoc(collection(db, "accounts"), account);
-      console.log("Document written with ID: ", docRef.id);
-      // navigate('/accounts'); // Navigate to accounts listing page after submission
+      await addDoc(collection(db, "accounts"), account);
+      setOpenDialog(true); // Open the dialog on successful account creation
     } catch (error) {
       console.error("Error adding document: ", error);
     }
   };
 
   return (
+
+        
         <Container maxWidth="md" sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
           Create Account
@@ -275,7 +289,24 @@ const CreateAccount = () => {
           <Button type="submit" variant="contained">Save</Button>
         </Box>
       </Box>
+      
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+      >
+        <DialogTitle>Account Created</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            The account has been successfully created.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
+
+    
   );
 };
 
