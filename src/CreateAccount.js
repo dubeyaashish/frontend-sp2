@@ -1,14 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar, IconButton } from '@mui/material';
-import UploadIcon from '@mui/icons-material/Upload';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { initializeApp } from 'firebase/app';
-import firebaseConfig from './firebase/config';
-
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
 
 
 
@@ -38,22 +32,23 @@ const CreateAccount = () => {
     setAccount({ ...account, [name]: value });
   };
 
+  const handleImageUpload = async (file) => {
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, `profile_pictures/${file.name}`);
+    const snapshot = await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    setAccount({ ...account, profilePicture: downloadURL });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+  }
+};
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const storage = getStorage();
-      const storageRef = ref(storage, `profile_pictures/${file.name}`);
-  
-      uploadBytes(storageRef, file).then((snapshot) => {
-        getDownloadURL(snapshot.ref).then((downloadURL) => {
-          setAccount({ ...account, profilePicture: downloadURL });
-        });
-      }).catch((error) => {
-        console.error('Error uploading file:', error);
-      });
+      handleImageUpload(file);
     }
   };
-  
 
   const triggerFileInput = () => {
     fileInputRef.current.click();
@@ -90,79 +85,70 @@ const CreateAccount = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Create Account
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-          <Avatar
-            src={account.profilePicture ? account.profilePicture : ''}
-            sx={{ width: 56, height: 56, marginRight: 2 }}
-          />
-          <IconButton color="primary" aria-label="upload picture" component="span" onClick={triggerFileInput}>
-            <UploadIcon />
-          </IconButton>
-          <input
-            type="file"
-            hidden
-            onChange={handleImageChange}
-            ref={fileInputRef}
-          />
-        </Box>
-      
+        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Create Account
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+            <Avatar
+              src={account.profilePicture ? account.profilePicture : ''}
+              sx={{ width: 56, height: 56, marginRight: 2, cursor: 'pointer' }}
+              onClick={triggerFileInput}
+            />
+            <input
+              type="file"
+              hidden
+              onChange={handleImageChange}
+              ref={fileInputRef}
+            />
+          </Box>
     
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Create Account
-      </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
-        
       <Typography variant="h6">Personal Information</Typography>
-<Grid container spacing={2}>
-  <Grid item xs={12} md={6}>
-    <TextField
-      margin="normal"
-      required
-      fullWidth
-      name="firstName"
-      label="First Name"
-      value={account.firstName}
-      onChange={handleInputChange}
-    />
-  </Grid>
-  <Grid item xs={12} md={6}>
-    <TextField
-      margin="normal"
-      required
-      fullWidth
-      name="lastName"
-      label="Last Name"
-      value={account.lastName}
-      onChange={handleInputChange}
-    />
-  </Grid>
-  <Grid item xs={12} md={6}>
-    <TextField
-      margin="normal"
-      required
-      fullWidth
-      name="phone"
-      label="Phone Number"
-      value={account.phone}
-      onChange={handleInputChange}
-    />
-  </Grid>
-  <Grid item xs={12} md={6}>
-    <TextField
-      margin="normal"
-      required
-      fullWidth
-      name="address"
-      label="Address"
-      value={account.address}
-      onChange={handleInputChange}
-    />
+      <Grid container spacing={2}>
+      <Grid item xs={12} md={6}>
+        <TextField
+          margin="normal"
+          required
+          fullWidth
+          name="firstName"
+          label="First Name"
+          value={account.firstName}
+          onChange={handleInputChange}
+        />
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="lastName"
+            label="Last Name"
+            value={account.lastName}
+            onChange={handleInputChange}
+          />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="phone"
+              label="Phone Number"
+              value={account.phone}
+              onChange={handleInputChange}
+            />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="address"
+                label="Address"
+                value={account.address}
+                onChange={handleInputChange}
+              />
   </Grid>
   <Grid item xs={12} md={6}>
     <TextField
@@ -279,11 +265,9 @@ const CreateAccount = () => {
         </FormControl>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-        <Button type="submit" variant="contained">Save</Button>
+          <Button type="submit" variant="contained">Save</Button>
         </Box>
       </Box>
-    </Container>
-    </Box>
     </Container>
   );
 };
