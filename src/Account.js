@@ -27,7 +27,7 @@ const AccountPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "Accounts")); // Adjust "Accounts" to your Firebase collection name
+        const querySnapshot = await getDocs(collection(db, "accounts")); // Adjust "Accounts" to your Firebase collection name
         const accountData = [];
         querySnapshot.forEach((doc) => {
           accountData.push({ id: doc.id, ...doc.data() });
@@ -71,11 +71,11 @@ const AccountPage = () => {
             {accounts.map((account) => (
               <TableRow key={account.id}>
                 <TableCell component="th" scope="row">
-                  {account.name} {/* Adjust field names based on your Firebase data */}
+                {account.firstName + ' ' + account.lastName}
                 </TableCell>
-                <TableCell>{account.id}</TableCell>
+                <TableCell>{account.employeeId}</TableCell>
                 <TableCell>{account.position}</TableCell>
-                <TableCell>{account.status}</TableCell>
+                <TableCell>{account.accountStatus}</TableCell>
                 <TableCell>
                   {/* You can add onClick event to this button to handle "SEE MORE" */}
                   <Button variant="outlined">See More</Button>
