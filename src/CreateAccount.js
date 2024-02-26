@@ -100,7 +100,7 @@ const CreateAccount = () => {
           <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
             <Avatar
               src={account.profilePicture ? account.profilePicture : ''}
-              sx={{ width: 56, height: 56, marginRight: 2, cursor: 'pointer' }}
+              sx={{ width: 122, height: 122, marginRight: 2, cursor: 'pointer' }}
               onClick={triggerFileInput}
             />
             <input
