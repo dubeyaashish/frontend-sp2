@@ -2,6 +2,7 @@ import "./App.css";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import API, { setAuthToken } from './api'; // Adjust the import path as needed
 
 function LoginPage({ onLoginSuccess }) {
   const [ID, setID] = useState("");
@@ -21,6 +22,9 @@ function LoginPage({ onLoginSuccess }) {
     event.preventDefault();
     try {
       const credential = await signInWithEmailAndPassword(auth, ID, password);
+      const token = await credential.user.getIdToken();
+      setAuthToken(token);
+      localStorage.setItem('token', token);
       onLoginSuccess(); // Update App's login state
       navigate("/"); // Redirect after successful login
     } catch (error) {
