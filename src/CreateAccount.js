@@ -151,9 +151,7 @@
               />
             </Box>
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <Button type="submit" variant="contained" disabled={!isFormValid()}>Save</Button>
-        </Box>
+
       
         <Typography variant="h6">Personal Information</Typography>
         <Grid container spacing={2}>
