@@ -40,7 +40,7 @@ function LoginPage({ onLoginSuccess }) {
             type="text"
             value={ID}
             onChange={handleIDChange}
-            placeholder="Employee ID"
+            placeholder="Email"
             className="form-control"
           />
           <br />
