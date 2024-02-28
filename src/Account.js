@@ -11,14 +11,8 @@ import {
   Button,
   Typography,
 } from '@mui/material';
-import { collection, getDocs, getFirestore } from 'firebase/firestore';
-import { initializeApp } from 'firebase/app';
-import firebaseConfig from './firebase/config';
 import { useNavigate } from 'react-router-dom'; // if using react-router for navigation
-
-// Initialize Firebase app and get Firestore database
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import API from './api'; // Import your Axios instance
 
 const AccountPage = () => {
   const [accounts, setAccounts] = useState([]);
@@ -27,12 +21,9 @@ const AccountPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "accounts")); // Adjust "Accounts" to your Firebase collection name
-        const accountData = [];
-        querySnapshot.forEach((doc) => {
-          accountData.push({ id: doc.id, ...doc.data() });
-        });
-        setAccounts(accountData);
+        // Using the Axios instance to make the API call
+        const response = await API.get('/admin/user');
+        setAccounts(response.data);
       } catch (error) {
         console.error("Error fetching accounts:", error);
       }
@@ -68,20 +59,18 @@ const AccountPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {accounts.map((account) => (
-              <TableRow key={account.id}>
-                <TableCell component="th" scope="row">
-                {account.firstName + ' ' + account.lastName}
-                </TableCell>
-                <TableCell>{account.employeeId}</TableCell>
-                <TableCell>{account.position}</TableCell>
-                <TableCell>{account.accountStatus}</TableCell>
-                <TableCell>
-                  {/* You can add onClick event to this button to handle "SEE MORE" */}
-                  <Button variant="outlined">See More</Button>
-                </TableCell>
-              </TableRow>
-            ))}
+          {accounts.map((account) => (
+          <TableRow key={account.id}>
+            <TableCell component="th" scope="row">
+              {account.first_name + ' ' + account.last_name}
+            </TableCell>
+            <TableCell>{account.employeeid}</TableCell>
+            <TableCell>{account.position}</TableCell>
+            <TableCell>
+              {/* Additional actions */}
+            </TableCell>
+          </TableRow>
+        ))}
           </TableBody>
         </Table>
       </TableContainer>

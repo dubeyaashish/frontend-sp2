@@ -17,6 +17,7 @@ import { PieChart, Pie, Legend, Tooltip as RechartTooltip, BarChart, Bar, XAxis,
 import { collection, getDocs, getFirestore } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import firebaseConfig from './firebase/config';
+import API from './api'; // Import your Axios instance
 
 // Initialize Firebase app and get Firestore database
 const app = initializeApp(firebaseConfig);
@@ -31,30 +32,30 @@ const GeneralPage = () => {
 
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchEmployees = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "Employee"));
-        const employeeData = [];
-        querySnapshot.forEach((doc) => {
-          employeeData.push({ id: doc.id, ...doc.data() });
+        const employeeResponse = await API.get('/admin/user'); // Endpoint for Employees
+        const checkInResponse = await API.get('/CheckIns'); // Endpoint for CheckIns
+  
+        const employees = employeeResponse.data.reduce((acc, employee) => {
+          acc[employee.employeeId] = { name: employee.first_name + ' ' + employee.last_name, position: employee.position };
+          return acc;
+        }, {});
+  
+        const combinedData = checkInResponse.data.map(checkIn => {
+          return { 
+            ...employees[checkIn.employeeId], 
+            checkInTime: checkIn.checkInTime // Assuming 'checkInTime' is a field in CheckIns
+          };
         });
-        setEmployees(employeeData);
-        console.log(employeeData);
-
-        // Transform fetched data for the charts
-        const transformedChartData = {
-          daily: [], // Populate with actual data
-          weekly: [], // Populate with actual data
-        };
-          // TODO: Populate transformedChartData with actual data for charts
-          setChartData(transformedChartData);
+  
+        setEmployees(combinedData);
       } catch (error) {
-        console.error("Error fetching employees:", error);
+        console.error("Error fetching data:", error);
       }
     };
-
-    fetchData();
-    console.log(employees);
+  
+    fetchEmployees();
   }, []);
 
   return (
@@ -137,20 +138,20 @@ const GeneralPage = () => {
             <TableRow>
               <TableCell>User</TableCell>
               <TableCell>Position</TableCell>
-              <TableCell>Status</TableCell>
+              <TableCell>Check In</TableCell>
             </TableRow>
           </TableHead>
-          <TableBody>
-            {employees.map((employee) => (
-              <TableRow key={employee.id}>
-                <TableCell component="th" scope="row">
-                  {employee.name}
-                </TableCell>
-                <TableCell>{employee.position}</TableCell>
-                <TableCell>{employee.status}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+            <TableBody>
+          {employees.map((employee) => (
+            <TableRow key={employee.id}>
+              <TableCell component="th" scope="row">
+                {employee.first_name + ' ' + employee.last_name} {/* Adjust if your data structure is different */}
+              </TableCell>
+              <TableCell>{employee.position}</TableCell>
+              <TableCell>{employee.checkInTime}</TableCell> {/* Display check-in time */}
+            </TableRow>
+          ))}
+        </TableBody>
         </Table>
       </TableContainer>
     </Box>
