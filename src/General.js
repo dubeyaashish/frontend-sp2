@@ -13,50 +13,92 @@ import {
   IconButton,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { PieChart, Pie, Legend, Tooltip as RechartTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { collection, getDocs, getFirestore } from 'firebase/firestore';
-import { initializeApp } from 'firebase/app';
-import firebaseConfig from './firebase/config';
+import {
+  PieChart,
+  Pie,
+  Legend,
+  Tooltip as RechartTooltip,
+  Cell, // Import Cell
+  ResponsiveContainer, // Import ResponsiveContainer
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip
+} from 'recharts';
 import API from './api'; // Import your Axios instance
 
-// Initialize Firebase app and get Firestore database
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 const GeneralPage = () => {
   const [employees, setEmployees] = useState([]);
   const [chartData, setChartData] = useState({
     daily: [], // Data for the daily pie chart
-    weekly: [], // Data for the weekly bar chart
+    weekly: [] // Data for the weekly bar chart
   });
 
 
   useEffect(() => {
-    const fetchEmployees = async () => {
+    const fetchEmployeesAndCheckIns = async () => {
       try {
-        const employeeResponse = await API.get('/admin/user'); // Endpoint for Employees
-        const checkInResponse = await API.get('/CheckIns'); // Endpoint for CheckIns
-  
-        const employees = employeeResponse.data.reduce((acc, employee) => {
-          acc[employee.employeeId] = { name: employee.first_name + ' ' + employee.last_name, position: employee.position };
-          return acc;
-        }, {});
-  
+        const employeeResponse = await API.get('/admin/user');
+        const checkInResponse = await API.get('/admin/checkin');
+
+        const employeeMap = new Map();
+        employeeResponse.data.forEach(emp => {
+          employeeMap.set(emp.id, {
+            name: emp.first_name + ' ' + emp.last_name,
+            position: emp.position
+          });
+        });
+
         const combinedData = checkInResponse.data.map(checkIn => {
-          return { 
-            ...employees[checkIn.employeeId], 
-            checkInTime: checkIn.checkInTime // Assuming 'checkInTime' is a field in CheckIns
+          const employee = employeeMap.get(checkIn.id);
+          return {
+            ...employee,
+            checkInTime: checkIn.checkedIn || 'Not available',
+            checkOutTime: checkIn.checkedOut || '-'
           };
         });
-  
+
+        const today = new Date();
+        const todayCheckIns = checkInResponse.data.filter(checkIn => {
+          const checkInDate = new Date(checkIn.date);
+          return checkInDate.toDateString() === today.toDateString();
+        }).length;
+
+        const dailyData = [
+          { name: "Checked In Today", value: todayCheckIns },
+          { name: "Not Checked In", value: employeeResponse.data.length - todayCheckIns }
+        ];
+
+        const weeklyCheckIns = {
+          Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0
+        };
+
+        checkInResponse.data.forEach(checkIn => {
+          const checkInDate = new Date(checkIn.date);
+          const day = checkInDate.toLocaleDateString('en-US', { weekday: 'short' });
+          weeklyCheckIns[day]++;
+        });
+
+        const weeklyData = Object.keys(weeklyCheckIns).map(day => ({
+          day: day,
+          checkIns: weeklyCheckIns[day]
+        }));
+
+        setChartData({ daily: dailyData, weekly: weeklyData });
         setEmployees(combinedData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
-  
-    fetchEmployees();
+
+    fetchEmployeesAndCheckIns();
   }, []);
+
+
+  const COLORS = ['#4caf50', '#f44336'];
 
   return (
     <Box>
@@ -103,57 +145,82 @@ const GeneralPage = () => {
         }}
       >
         {/* Pie Chart for Today's Check In and Check Out */}
-        <Paper sx={{ width: '300px', p: 2 }}>
-          <Typography variant="h6" gutterBottom>
+          <Paper sx={{ width: '100%', maxWidth: 360, mx: 'auto', p: 2, mt: 2 }}>
+          <Typography variant="h6" gutterBottom textAlign="center">
             Today's Data
           </Typography>
-          <PieChart width={200} height={200}>
-            <Pie data={chartData.daily} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" label />
-            <RechartTooltip />
-            <Legend />
-          </PieChart>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie 
+                data={chartData.daily} 
+                dataKey="value" 
+                nameKey="name" 
+                cx="50%" 
+                cy="50%" 
+                outerRadius={80}
+                // label is removed here
+              >
+                {
+                  chartData.daily.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))
+                }
+              </Pie>
+              <RechartTooltip />
+              <Legend 
+                align="center"
+                verticalAlign="bottom"
+                wrapperStyle={{ bottom: -10 }}
+                iconSize={10}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </Paper>
 
-        {/* Bar Chart for Weekly Employee Check In */}
         <Paper sx={{ flex: 1, p: 2 }}>
           <Typography variant="h6" gutterBottom>
             Weekly Employee Check In
           </Typography>
-          <BarChart width={500} height={300} data={chartData.weekly}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="day" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="checkIn" fill="#8884d8" />
-            <Bar dataKey="checkOut" fill="#82ca9d" />
-          </BarChart>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={chartData.weekly}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis />
+              <Tooltip />
+              <Legend align="center" verticalAlign="bottom" wrapperStyle={{ bottom: -10 }} iconSize={10} />
+              <Bar dataKey="checkIns" fill="#4caf50" />
+            </BarChart>
+          </ResponsiveContainer>
         </Paper>
+
       </Box>
 
       {/* Table */}
       <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Check In</TableCell>
-            </TableRow>
-          </TableHead>
-            <TableBody>
-          {employees.map((employee) => (
-            <TableRow key={employee.id}>
+      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell>User</TableCell>
+            <TableCell>Position</TableCell>
+            <TableCell>Check In</TableCell>
+            <TableCell>Check Out</TableCell> {/* New column */}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {employees.map((employee, index) => (
+            <TableRow key={index}>
               <TableCell component="th" scope="row">
-                {employee.first_name + ' ' + employee.last_name} {/* Adjust if your data structure is different */}
+                {employee.name}
               </TableCell>
               <TableCell>{employee.position}</TableCell>
-              <TableCell>{employee.checkInTime}</TableCell> {/* Display check-in time */}
+              <TableCell>{employee.checkInTime}</TableCell>
+              <TableCell>{employee.checkOutTime}</TableCell> {/* Display check-out time */}
             </TableRow>
           ))}
         </TableBody>
-        </Table>
-      </TableContainer>
+      </Table>
+    </TableContainer>
+
     </Box>
   );
 };
