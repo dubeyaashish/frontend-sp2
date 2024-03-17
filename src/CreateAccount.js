@@ -118,21 +118,37 @@
       };
     
       try {
-    // Retrieve the token from localStorage
-    const token = localStorage.getItem('token');
-    
-    // Include the token in the request header
-    const response = await axios.post('http://localhost:3001/register', employeeData, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+        const token = localStorage.getItem('token');
+  
+        const response = await axios.post('http://localhost:3001/register', employeeData, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+  
+        if (response.status === 201) {
+          setOpenDialog(true);
+          setAccount({
+            firstName: '',
+            lastName: '',
+            phone: '',
+            address: '',
+            zipCode: '',
+            email: '',
+            employeeId: '',
+            position: '',
+            emergencyFirstName: '',
+            emergencyLastName: '',
+            emergencyPhone: '',
+            emergencyRelation: '',
+            accountStatus: '',
+            profilePicture: '',
+            isAdmin: false,
+          });
+        }
+      } catch (error) {
+        console.error("Error during registration: ", error.response || error);
       }
-    });
-
-    console.log(response.data);
-    // rest of your code for successful registration
-  } catch (error) {
-    console.error("Error during registration: ", error.response || error);
-  }
     };
     
     
@@ -339,21 +355,21 @@
           </Box>
         </Box>
         
-        <Dialog
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-        >
-          <DialogTitle>Account Created</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              The account has been successfully created.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDialog(false)}>Close</Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+      >
+        <DialogTitle>Account Created</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            The account has been successfully created.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
 
       
     );
