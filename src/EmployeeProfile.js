@@ -4,11 +4,15 @@ import { Box, Container, Typography, Paper, Avatar, Grid, TextField, FormControl
 import API from './api'; // Your Axios instance
 
 const EmployeeProfile = () => {
-  const { id } = useParams(); // Using 'id' here instead of 'employeeid'
+  const { id } = useParams();
   const [employee, setEmployee] = useState(null);
 
   useEffect(() => {
     const fetchEmployee = async () => {
+      if (!id) {
+        console.error("No ID provided");
+        return;
+      }
       try {
         const response = await API.get(`/admin/user/${id}`);
         setEmployee(response.data);

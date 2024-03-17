@@ -1,6 +1,6 @@
   import React, { useState, useRef } from 'react';
   import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,FormControlLabel,Switch } from '@mui/material';
   import { useNavigate } from 'react-router-dom';
   import { styled } from '@mui/material/styles';
   import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -23,9 +23,15 @@
       emergencyRelation: '',
       accountStatus: '',
       profilePicture: '',
+      isAdmin:  false,
     });
     
     const fileInputRef = useRef();
+
+    const handleToggleChange = () => {
+      setAccount({ ...account, isAdmin: !account.isAdmin });
+    };
+    
 
     const isFormValid = () => {
       // Add more fields if necessary
@@ -106,7 +112,9 @@
         emergency_contract_telephone: account.emergencyPhone,
         emergency_contract_relation: account.emergencyRelation,
         employeeid: account.employeeId,
-        profilePicture: account.profilePicture
+        profilePicture: account.profilePicture,
+        account_status: account.accountStatus,
+        is_admin: account.isAdmin,
       };
     
       try {
@@ -311,6 +319,19 @@
                   <MenuItem value="Dismissed">Dismissed</MenuItem>
                   <MenuItem value="Suspended">Suspended</MenuItem>
               </Select>
+
+              <Typography variant="h6" sx={{ mt: 2 }}>Admin</Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={account.isAdmin}
+                    onChange={handleToggleChange}
+                    name="isAdmin"
+                  />
+                }
+                label={account.isAdmin ? "Admin" : "Regular User"}
+              />
+              
           </FormControl>
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
