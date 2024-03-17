@@ -8,6 +8,8 @@ import LoginPage from "./Login";
 import UserGeneralPage from "./UserGeneral";
 import AccountPage from "./Account";
 import CreateAccount from "./CreateAccount";
+import EmployeePage from "./Employees";
+import EmployeeProfile from './EmployeeProfile';
 import "./../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import { initializeApp } from "firebase/app";
 import {
@@ -69,6 +71,8 @@ export default function App() {
             <Route path="/status" element={<StatusPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/account" element={<AccountPage />} />
+            <Route path="/employees" element={<EmployeePage/>}/>
+            <Route path="/employee-profile/:employeeid" element={<EmployeeProfile />} />
             <Route path="/create-account" element={<CreateAccount />} /> {/* Route for CreateAccount */}
             <Route path="/user-general" element={<UserGeneralPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

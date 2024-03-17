@@ -68,6 +68,7 @@
   background-color: #007bff;
   color: #fff;
   cursor: pointer;
+  margin-left: 50px;
 }
 
 .btn-primary:hover {
