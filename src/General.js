@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -90,32 +89,26 @@ const GeneralPage = () => {
       try {
         const employeeResponse = await API.get('/admin/user');
         const checkInResponse = await API.get('/admin/checkin');
-    
-        const todayString = new Date().toDateString(); // Get today's date as a string
-    
+
         const employeeMap = new Map();
         employeeResponse.data.forEach(emp => {
           employeeMap.set(emp.id, {
             name: emp.first_name + ' ' + emp.last_name,
             position: emp.position,
-            employeeid: emp.employeeid,
-            faceAdded: emp.faceAdded
+            employeeid: emp.employeeid,  // Include the employee ID
+            faceAdded: emp.faceAdded     // Include faceAdded status
+            
           });
         });
 
-        const combinedData = checkInResponse.data.filter(checkIn => {
-          const checkInDateString = new Date(checkIn.checkedIn).toDateString();
-          return checkInDateString === todayString;
-        }).map(checkIn => {
-          const employee = employeeMap.get(checkIn.employeeId);
+        const combinedData = checkInResponse.data.map(checkIn => {
+          const employee = employeeMap.get(checkIn.id);
           return {
             ...employee,
-            checkInTime: new Date(checkIn.checkedIn).toLocaleTimeString(),
-            checkOutTime: checkIn.checkedOut ? new Date(checkIn.checkedOut).toLocaleTimeString() : '-'
+            checkInTime: checkIn.checkedIn || 'Not available',
+            checkOutTime: checkIn.checkedOut || '-'
           };
         });
-  
-        setEmployees(combinedData); // Now includes data with today's check-ins and check-outs
 
         const today = new Date();
         const todayCheckIns = checkInResponse.data.filter(checkIn => {
@@ -128,37 +121,31 @@ const GeneralPage = () => {
           { name: "Absent", value: employeeResponse.data.length - todayCheckIns }
         ];
 
+// week
         const getStartOfWeek = (date) => {
           const start = new Date(date);
           start.setDate(start.getDate() - start.getDay() + (start.getDay() === 0 ? -6 : 1)); // set to Monday
           return start;
         };
-  
         const formatDate = (date) => {
           return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
         };
-  
         const startOfWeek = getStartOfWeek(today);
-  
-        const weeklyCheckIns = Array.from({ length: 7 }).map((_, index) => {
+        const weeklyData = Array.from({ length: 7 }, (_, index) => {
           const dayDate = new Date(startOfWeek);
           dayDate.setDate(dayDate.getDate() + index);
-          return { day: dayDate.toLocaleDateString('en-US', { weekday: 'short' }), date: formatDate(dayDate), count: 0 };
+          const dateStr = dayDate.toDateString();
+          
+          // Count the number of check-ins for this particular day
+          const count = checkInResponse.data.filter(checkIn => 
+            new Date(checkIn.date).toDateString() === dateStr
+          ).length;
+    
+          return {
+            day: `${dayDate.toLocaleDateString('en-US', { weekday: 'short' })} (${formatDate(dayDate)})`,
+            Present: count
+          };
         });
-  
-        checkInResponse.data.forEach(checkIn => {
-          const checkInDate = new Date(checkIn.date);
-          const index = checkInDate.getDay() - (checkInDate.getDay() === 0 ? -6 : 1);
-          if (index >= 0 && index < 7 && checkInDate >= startOfWeek) {
-            weeklyCheckIns[index].count++;
-          }
-        });
-  
-        const weeklyData = weeklyCheckIns.map(day => ({
-          day: `${day.day} (${day.date})`,
-          Present: day.count
-        }));
-  
         setChartData({ daily: dailyData, weekly: weeklyData });
         setEmployees(combinedData);
       } catch (error) {
@@ -186,24 +173,17 @@ const GeneralPage = () => {
       : employees;
 
 
-      const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value || '');
-        setCurrentPage(1); // Reset to first page on new search
+    const handleSearchChange = (event) => {
+      setSearchTerm(event.target.value);
+      setCurrentPage(1); // Reset to first page on new search
     };
-    
 
     let filteredEmployees = employees.filter(employee => {
-      const name = employee.name || "";
-      const employeeId = employee.employeeid || "";
-      return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             employeeId.includes(searchTerm);
+      // Check if employee name exists and is not undefined
+      const name = employee.name ? employee.name.toLowerCase() : "";
+      return employee.checkInTime !== 'Not available' && 
+             name.includes(searchTerm.toLowerCase());
     });
-    
-
-    console.log("Employees: ", employees);
-    console.log("Search term: ", searchTerm);
-
-    
     
     // Pagination Logic
     const indexOfLastEmployee = currentPage * employeesPerPage;
@@ -318,46 +298,39 @@ const GeneralPage = () => {
     </Box>
       {/* Table */}
       <TableContainer component={Paper} sx={{ mt: 2 }}>
-        <Table sx={{ minWidth: 800 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Check in</TableCell>
-              <TableCell>Check out</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {currentEmployees.map((employee, index) => (
-              <TableRow key={index}>
-                <TableCell component="th" scope="row" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Avatar sx={{ mr: 2, width: 24, height: 24 }} src={employee.faceAdded ? `URL_TO_PROFILE_PICTURE/${employee.employeeid}` : `URL_TO_PLACEHOLDER_IMAGE`}/>
-                  {employee.name}
-                </TableCell>
-                <TableCell>{employee.employeeid}</TableCell>
-                <TableCell>{employee.position}</TableCell>
-                <TableCell>{employee.checkInTime}</TableCell>
-                <TableCell>{employee.checkOutTime}</TableCell>
-              </TableRow>
-            ))}
-            {currentEmployees.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  No data available
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      <Table sx={{ minWidth: 800 }} aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell>User</TableCell>
+            <TableCell>ID</TableCell>
+            <TableCell>Position</TableCell>
+            <TableCell>Account Status</TableCell> {/* New column */}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+        {currentEmployees.map((employee, index) => (
+    <TableRow key={index}>
+      <TableCell component="th" scope="row" sx={{ display: 'flex', alignItems: 'center' }}>
+        <Avatar sx={{ mr: 2, width: 24, height: 24 }} src={employee.faceAdded ? `URL_TO_PROFILE_PICTURE/${employee.employeeid}` : `URL_TO_PLACEHOLDER_IMAGE`}/>
+        {employee.name}
+      </TableCell>
+      <TableCell>{employee.employeeid}</TableCell>
+      <TableCell>{employee.position}</TableCell>
+      <TableCell>{employee.checkInTime}</TableCell>
+      <TableCell>{employee.checkOutTime}</TableCell>
+    </TableRow>
+  ))}
+</TableBody>
 
-        <Pagination 
-            employeesPerPage={employeesPerPage} 
-            totalEmployees={filteredEmployees.length} 
-            paginate={paginate}
-            currentPage={currentPage}
-          />
-      </TableContainer>
+      </Table>
+      <Pagination 
+          employeesPerPage={employeesPerPage} 
+          totalEmployees={filteredEmployees.length} 
+          paginate={paginate}
+          currentPage={currentPage}
+        />  
+    </TableContainer>
+
     </Box>
   );
 };
