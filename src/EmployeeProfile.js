@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+
 import { Box, Container, Typography, Paper, Avatar, Grid, TextField, FormControl, FormControlLabel, Switch,
-InputLabel,Select,MenuItem } from '@mui/material';
+InputLabel,Select,MenuItem,Button } from '@mui/material';
 import API from './api';
+
+
 
 const EmployeeProfile = () => {
   const { id } = useParams();
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEmployee = async () => {
@@ -43,6 +47,12 @@ const EmployeeProfile = () => {
     return <Typography>No employee data available.</Typography>;
   }
 
+  const handleEmployeeHistory = () => {
+    navigate(`/employee-history/${id}`); // Using the employee's ID in the path
+  }
+  
+
+  
   // ... rest of your component
 
   const handleInputChange = (event) => {
@@ -72,9 +82,16 @@ const EmployeeProfile = () => {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>Employee Details</Typography>
       <Paper sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-          <Avatar src={employee.profilePicture || ''} sx={{ width: 122, height: 122 }} />
-        </Box>
+      <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          mb: 2 
+      }}>
+      <Avatar src={employee.profilePicture || ''} sx={{ width: 122, height: 122, mb: 2 }} />
+      <Button variant="contained" onClick={handleEmployeeHistory}>History</Button>
+    </Box>
 
       <Typography variant="h6">Personal Information</Typography>
       <Grid container spacing={2}>
@@ -221,33 +238,33 @@ const EmployeeProfile = () => {
       </Grid>
 
       <Typography variant="h6" sx={{ mt: 2 }}>Account Status</Typography>
-        <FormControl fullWidth margin="normal">
-          <InputLabel id="account-status-label">Account Status</InputLabel>
-          <Select
-            labelId="account-status-label"
-            name="accountStatus"
-            value={employee.accountStatus}
-            onChange={handleInputChange}
-            style={{ backgroundColor: getStatusColor(employee.accountStatus) }}
-          >
-            <MenuItem value="Active">Active</MenuItem>
-            <MenuItem value="Paid leave">Paid leave</MenuItem>
-            <MenuItem value="Dismissed">Dismissed</MenuItem>
-            <MenuItem value="Suspended">Suspended</MenuItem>
-          </Select>
-        </FormControl>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="account-status-label">Account Status</InputLabel>
+        <Select
+          labelId="account-status-label"
+          name="accountStatus"
+          value={employee.accountStatus || ''} // Default to empty string if not available
+          onChange={handleInputChange}
+          style={{ backgroundColor: getStatusColor(employee.accountStatus) }}
+        >
+          <MenuItem value="Active">Active</MenuItem>
+          <MenuItem value="Paid leave">Paid leave</MenuItem>
+          <MenuItem value="Dismissed">Dismissed</MenuItem>
+          <MenuItem value="Suspended">Suspended</MenuItem>
+        </Select>
+      </FormControl>
 
-        <Typography variant="h6" sx={{ mt: 2 }}>Admin</Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={employee.isAdmin || false}
-              onChange={handleToggleChange}
-              name="isAdmin"
-            />
-          }
-          label={employee.isAdmin ? "Admin" : "Regular User"}
-        />
+      <Typography variant="h6" sx={{ mt: 2 }}>Admin</Typography>
+      <FormControlLabel
+        control={
+          <Switch
+            checked={employee.isAdmin || false} // Default to false if not available
+            onChange={handleToggleChange}
+            name="isAdmin"
+          />
+        }
+        label={employee.isAdmin ? "Admin" : "Regular User"}
+      />
 
       </Paper>
     </Container>
