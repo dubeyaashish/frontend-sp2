@@ -1,10 +1,21 @@
-  import React, { useState, useRef } from 'react';
+  import React, { useState, useRef,  useEffect } from 'react';
   import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,FormControlLabel,Switch } from '@mui/material';
   import { useNavigate } from 'react-router-dom';
   import { styled } from '@mui/material/styles';
   import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
   import axios from 'axios';
+
+  const generateEmployeeId = () => {
+    return `${Date.now()}`; // Example format: EMP1617109876235
+  };
+
+  const positions = [
+    "Manager", "Assistant", "Engineer", "Developer", "Designer", "Accountant",
+    "HR Coordinator", "Sales Representative", "Marketing Specialist", "Product Manager",
+    "Quality Analyst", "Researcher", "Administrator", "Consultant", "Customer Service",
+    "IT Support", "Logistics Coordinator", "Legal Advisor", "Public Relations", "Recruiter"
+  ];
 
   const CreateAccount = () => {
     const navigate = useNavigate();
@@ -32,19 +43,19 @@
       setAccount({ ...account, isAdmin: !account.isAdmin });
     };
     
-
     const isFormValid = () => {
-      // Add more fields if necessary
-      return account.firstName && account.lastName && account.phone && account.address && account.zipCode
-        && account.email && account.employeeId && account.position && account.emergencyFirstName
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email validation regex
+      return account.firstName && account.lastName && account.phone.length === 10
+        && account.address && account.zipCode && emailRegex.test(account.email)
+        && account.employeeId && account.position && account.emergencyFirstName
         && account.emergencyLastName && account.emergencyPhone && account.accountStatus;
     };
 
     const handleInputChange = (event) => {
       const { name, value } = event.target;
+      if (name === 'phone' && value.length > 10) return; // Limit phone number length
       setAccount({ ...account, [name]: value });
     };
-
     const handleImageUpload = async (file) => {
     try {
       const storage = getStorage();
@@ -151,11 +162,21 @@
       }
     };
     
-    
+    <FormControl fullWidth margin="normal">
+    <InputLabel id="position-label">Position</InputLabel>
+    <Select
+      labelId="position-label"
+      name="position"
+      value={account.position}
+      onChange={handleInputChange}
+    >
+      {positions.map((position, index) => (
+        <MenuItem key={index} value={position}>{position}</MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 
     return (
-
-          
           <Container maxWidth="md" sx={{ mt: 4 }}>
           <Typography variant="h4" gutterBottom>
             Create Account
@@ -261,16 +282,20 @@
       />
     </Grid>
     <Grid item xs={12} md={6}>
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        name="position"
-        label="Position"
-        value={account.position}
-        onChange={handleInputChange}
-      />
-    </Grid>
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="position-label">Position</InputLabel>
+            <Select
+              labelId="position-label"
+              name="position"
+              value={account.position}
+              onChange={handleInputChange}
+            >
+              {positions.map((position, index) => (
+                <MenuItem key={index} value={position}>{position}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
   </Grid>
 
   <Typography variant="h6" sx={{ mt: 2 }}>Emergency Contact</Typography>

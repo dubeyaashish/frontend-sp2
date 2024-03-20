@@ -31,8 +31,8 @@ const EmployeePage = () => {
     fetchData();
   }, []);
 
-  const handleSeeMore = (employeeId) => {
-    navigate(`/employee-profile/${employeeId}`); // Adjust the path as needed
+  const handleSeeMore = (id) => {
+    navigate(`/employee-profile/${id}`); // Adjust the path as needed
   };
 
   return (
@@ -45,15 +45,15 @@ const EmployeePage = () => {
       >
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Account Status</TableCell>
-              <TableCell></TableCell> {/* For SEE MORE */}
-            </TableRow>
-          </TableHead>
+        <TableHead sx={{ backgroundColor: '#EEBD77' }}>
+        <TableRow>
+          <TableCell sx={{ fontWeight: 'bold' }}>User</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>Position</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>Account Status</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}></TableCell> {/* For SEE MORE */}
+        </TableRow>
+      </TableHead>
           <TableBody>
             {employees.map((employee) => (
               <TableRow key={employee.id}>
@@ -62,13 +62,14 @@ const EmployeePage = () => {
                 </TableCell>
                 <TableCell>{employee.employeeid}</TableCell>
                 <TableCell>{employee.position}</TableCell>
+                <TableCell>{employee.account_status}</TableCell>
                 <TableCell>
                   {/* Placeholder for Account Status */}
                 </TableCell>
                 <TableCell>
                   <Button 
                     variant="outlined" 
-                    onClick={() => handleSeeMore(employee.employeeid)}
+                    onClick={() => handleSeeMore(employee.id)}
                   >
                     See More
                   </Button>

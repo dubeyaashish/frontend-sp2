@@ -72,7 +72,7 @@ export default function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/account" element={<AccountPage />} />
             <Route path="/employees" element={<EmployeePage/>}/>
-            <Route path="/employee-profile/:employeeid" element={<EmployeeProfile />} />
+            <Route path="/employee-profile/:id" element={<EmployeeProfile />} />
             <Route path="/create-account" element={<CreateAccount />} /> {/* Route for CreateAccount */}
             <Route path="/user-general" element={<UserGeneralPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

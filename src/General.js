@@ -81,10 +81,23 @@ const GeneralPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showTopCheckIns, setShowTopCheckIns] = useState(false);
+  const [userProfile, setUserProfile] = useState({ firstName: '', lastName: '' });
   const employeesPerPage = 3;
 
 
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await API.get('/profile'); // Adjust the endpoint if necessary
+        const { first_name, last_name } = response.data;
+        setUserProfile({ firstName: first_name, lastName: last_name });
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+
     const fetchEmployeesAndCheckIns = async () => {
       try {
         const employeeResponse = await API.get('/admin/user');
@@ -214,18 +227,15 @@ const GeneralPage = () => {
             gap: 1,
           }}
         >
-          <Typography variant="subtitle1">Carolina Monteiro | Admin</Typography>
+          <Typography variant="subtitle1">{`${userProfile.firstName} ${userProfile.lastName} | Admin`}</Typography>
           <Avatar
             sx={{
               bgcolor: "grey.200",
               color: "text.primary",
             }}
           >
-            CM
+            {userProfile.firstName[0]}{userProfile.lastName[0]}
           </Avatar>
-          <IconButton>
-            <MoreVertIcon />
-          </IconButton>
         </Box>
       </Box>
       {/* Charts */}
@@ -304,7 +314,8 @@ const GeneralPage = () => {
             <TableCell>User</TableCell>
             <TableCell>ID</TableCell>
             <TableCell>Position</TableCell>
-            <TableCell>Account Status</TableCell> {/* New column */}
+            <TableCell>Check In</TableCell> {/* New column */}
+            <TableCell>Check Out</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

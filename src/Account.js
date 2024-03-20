@@ -48,16 +48,16 @@ const AccountPage = () => {
         <Button variant="contained" onClick={handleCreateAccount}>Create</Button>
       </Box>
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>User</TableCell>
-              <TableCell>ID</TableCell>
-              <TableCell>Position</TableCell>
-              <TableCell>Account Status</TableCell>
-              <TableCell></TableCell> {/* For SEE MORE */}
-            </TableRow>
-          </TableHead>
+      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <TableHead sx={{ backgroundColor: '#EEBD77' }}>
+        <TableRow>
+          <TableCell sx={{ fontWeight: 'bold' }}>User</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>Position</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}>Account Status</TableCell>
+          <TableCell sx={{ fontWeight: 'bold' }}></TableCell> {/* For SEE MORE */}
+        </TableRow>
+      </TableHead>
           <TableBody>
           {accounts.map((account) => (
           <TableRow key={account.id}>
@@ -66,6 +66,7 @@ const AccountPage = () => {
             </TableCell>
             <TableCell>{account.employeeid}</TableCell>
             <TableCell>{account.position}</TableCell>
+            <TableCell>{account.account_status}</TableCell>
             <TableCell>
               {/* Additional actions */}
             </TableCell>
