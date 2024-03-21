@@ -20,6 +20,7 @@ const EmployeeHistory = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [filterDate, setFilterDate] = useState('');
+    
 
     const rowsPerPage = 15;
   

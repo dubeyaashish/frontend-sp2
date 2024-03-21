@@ -1,44 +1,34 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton,
-  Toolbar, CssBaseline
+  Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, CssBaseline, Box
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import DashboardIcon from '@mui/icons-material/Dashboard'; // Assuming this matches the "General" icon
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // Assuming this matches the "Profile" icon
-import HistoryIcon from '@mui/icons-material/History'; // Assuming this matches the "History" icon
-import FolderIcon from '@mui/icons-material/Folder'; // Assuming this matches the "Accounts" icon
-import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew'; // Assuming this matches the "Log Out" icon
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import HistoryIcon from '@mui/icons-material/History';
+import FolderIcon from '@mui/icons-material/Folder';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import IconButton from '@mui/material/IconButton';
+import API from './api';
 
 const drawerWidth = 240;
 
-export default function Navigation({ open, handleDrawerToggle }) {
+export default function UserNavigation({ open }) {
+  const [activeItem, setActiveItem] = useState(null);
+  const navigate = useNavigate();
+
+  const handleItemClick = (path) => {
+    setActiveItem(path);
+    navigate(path);
+  };
 
   const handleLogOut = () => {
-    // Redirect to the login page
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   return (
     <div>
       <CssBaseline />
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={handleDrawerToggle}
-        edge="start"
-        sx={{
-          marginRight: '36px',
-          ...(open && { display: 'none' }),
-          marginLeft: '20px',
-          position: 'fixed',
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          marginTop: '8px',
-        }}
-      >
-        <MenuIcon />
-      </IconButton>
       <Drawer
         sx={{
           width: drawerWidth,
@@ -52,39 +42,36 @@ export default function Navigation({ open, handleDrawerToggle }) {
         anchor="left"
         open={open}
       >
-        <Toolbar />
+        <Toolbar>
+          <img src="/Sunmi.png" alt="Logo" style={{ height: '70px', marginLeft: '20px' }} />
+        </Toolbar>
         <List>
-          <ListItem button component={Link} to="/">
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
+          {/* Other navigation items */}
+          <ListItem button onClick={() => handleItemClick('/user-general')} sx={{ bgcolor: activeItem === '/user-general' ? '#F0B869' : 'inherit' }}>
+            <ListItemIcon><DashboardIcon /></ListItemIcon>
             <ListItemText primary="General" />
           </ListItem>
-          <ListItem button component={Link} to="/profile">
-            <ListItemIcon>
-              <AccountCircleIcon />
-            </ListItemIcon>
+          <ListItem button onClick={() => handleItemClick('/userprofile')} sx={{ bgcolor: activeItem === '/userprofile' ? '#F0B869' : 'inherit' }}>
+            <ListItemIcon><AccountCircleIcon /></ListItemIcon>
             <ListItemText primary="Profile" />
           </ListItem>
-          <ListItem button component={Link} to="/history">
-            <ListItemIcon>
-              <HistoryIcon />
-            </ListItemIcon>
+          <ListItem button onClick={() => handleItemClick('/userhistory')} sx={{ bgcolor: activeItem === '/userhistory' ? '#F0B869' : 'inherit' }}>
+            <ListItemIcon><HistoryIcon /></ListItemIcon>
             <ListItemText primary="History" />
           </ListItem>
-          <ListItem button component={Link} to="/accounts">
-            <ListItemIcon>
-              <FolderIcon />
-            </ListItemIcon>
-            <ListItemText primary="Accounts" />
-          </ListItem>
-          <ListItem button onClick={handleLogOut}>
-            <ListItemIcon>
-              <PowerSettingsNewIcon />
-            </ListItemIcon>
-            <ListItemText primary="Log Out" />
-          </ListItem>
         </List>
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+          <List>
+            <ListItem button onClick={() => handleItemClick('/useraccount')} sx={{ bgcolor: activeItem === '/useraccount' ? '#F0B869' : 'inherit' }}>
+              <ListItemIcon><AccountCircleIcon /></ListItemIcon>
+              <ListItemText primary="Account" />
+            </ListItem>
+            <ListItem button onClick={handleLogOut}>
+              <ListItemIcon><PowerSettingsNewIcon /></ListItemIcon>
+              <ListItemText primary="Log Out" />
+            </ListItem>
+          </List>
+        </Box>
       </Drawer>
     </div>
   );

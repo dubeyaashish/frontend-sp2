@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import API, { setAuthToken } from './api'; // Adjust the import path as needed
-
+import axios from "axios";
 function LoginPage({ onLoginSuccess }) {
   const [ID, setID] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const auth = getAuth(); // Initialize Firebase auth
 
   const handleIDChange = (event) => {
@@ -25,12 +26,22 @@ function LoginPage({ onLoginSuccess }) {
       const token = await credential.user.getIdToken();
       setAuthToken(token);
       localStorage.setItem('token', token);
-      onLoginSuccess(); // Update App's login state
-      navigate("/"); // Redirect after successful login
+
+      const profileResponse = await axios.get('http://localhost:3001/profile', {
+        headers: { 'Authorization': `Bearer ${token}` }
+        
+      });
+      const isAdmin = profileResponse.data.is_admin;
+      console.log("isAdmin:", isAdmin);  // Check the value being set
+
+      
+      onLoginSuccess(isAdmin); // Update App's login state
+
     } catch (error) {
       alert("Username and Password are not found");
     }
   };
+
 
   return (
     <div className="login-container">

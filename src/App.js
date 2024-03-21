@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate,Router } from "react-router-dom";
 import LayoutWithNavigation from "./LayoutNavigation";
+import LayoutWithUserNavigation from "./LayoutUserNavigation";
 import GeneralPage from "./General";
 import StatusPage from "./Status";
 import SettingsPage from "./Settings";
@@ -27,6 +28,7 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCAP8DRvSdpG7B0D0Y2PXOONlhtDo1JxZQ",
@@ -46,22 +48,33 @@ const db = getFirestore(app);
 export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null); // Add this line
+  const navigate = useNavigate(); // Add thi
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (isAdmin) => {
     setIsLoggedIn(true);
+    setUserRole(isAdmin ? 'admin' : 'client'); // Set the user role based on isAdmin
+    navigate(isAdmin ? "/general" : "/user-general");
   };
+
+  
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setUserRole(null); // Reset the user role on logout
   };
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
+  
+
   return (
+    
     <div>
       {isLoggedIn ? (
+        userRole === 'admin' ? (
         <LayoutWithNavigation
           open={drawerOpen}
           handleDrawerToggle={toggleDrawer}
@@ -74,12 +87,26 @@ export default function App() {
             <Route path="/account" element={<AccountPage />} />
             <Route path="/employees" element={<EmployeePage/>}/>
             <Route path="/employee-profile/:id" element={<EmployeeProfile />} />
-            <Route path="/employee-history/:id" element={<EmployeeHistory />} />
+            <Route path="/employee-history" element={<EmployeeHistory/>} />
             <Route path="/create-account" element={<CreateAccount />} /> {/* Route for CreateAccount */}
-            <Route path="/user-general" element={<UserGeneralPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </LayoutWithNavigation>
+      ) : (
+        <LayoutWithUserNavigation
+              open={drawerOpen}
+              handleDrawerToggle={toggleDrawer}
+              onLogout={handleLogout}
+
+            >
+              <Routes>
+              <Route path="/user-general" element={<UserGeneralPage />} />
+              {/* <Route path="/user-profile" element={<UserProfilePage />} /> */}
+              {/* <Route path="/user-history" element={<UserHistoryPage />} /> */}
+              {/* <Route path="/user-account" element={<UserAccountPage />} /> */}
+              </Routes>
+            </LayoutWithUserNavigation>
+      )
       ) : (
         <LoginPage onLoginSuccess={handleLoginSuccess} />
       )}

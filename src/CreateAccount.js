@@ -1,4 +1,4 @@
-  import React, { useState, useRef,  useEffect } from 'react';
+  import React, { useState, useRef,  } from 'react';
   import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,FormControlLabel,Switch } from '@mui/material';
   import { useNavigate } from 'react-router-dom';
@@ -6,9 +6,6 @@
   import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
   import axios from 'axios';
 
-  const generateEmployeeId = () => {
-    return `${Date.now()}`; // Example format: EMP1617109876235
-  };
 
   const positions = [
     "Manager", "Assistant", "Engineer", "Developer", "Designer", "Accountant",
@@ -36,6 +33,16 @@
       profilePicture: '',
       isAdmin:  false,
     });
+
+    const generateEmployeeId = () => {
+      return `${Date.now() % 1000000}`; // Example format: EMP1617109876235
+    };
+  
+    const handleEmployeeIdClick = () => {
+      if (!account.employeeId) {
+        setAccount({ ...account, employeeId: generateEmployeeId() });
+      }
+    };
     
     const fileInputRef = useRef();
 
@@ -177,6 +184,8 @@
   </FormControl>
 
     return (
+
+          
           <Container maxWidth="md" sx={{ mt: 4 }}>
           <Typography variant="h4" gutterBottom>
             Create Account
@@ -279,23 +288,20 @@
         label="Employee ID"
         value={account.employeeId}
         onChange={handleInputChange}
+        onClick={handleEmployeeIdClick}
       />
     </Grid>
     <Grid item xs={12} md={6}>
-          <FormControl fullWidth margin="normal">
-            <InputLabel id="position-label">Position</InputLabel>
-            <Select
-              labelId="position-label"
-              name="position"
-              value={account.position}
-              onChange={handleInputChange}
-            >
-              {positions.map((position, index) => (
-                <MenuItem key={index} value={position}>{position}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
+      <TextField
+        margin="normal"
+        required
+        fullWidth
+        name="position"
+        label="Position"
+        value={account.position}
+        onChange={handleInputChange}
+      />
+    </Grid>
   </Grid>
 
   <Typography variant="h6" sx={{ mt: 2 }}>Emergency Contact</Typography>
