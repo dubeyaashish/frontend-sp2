@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
 
 import { Box, Container, Typography, Paper, Avatar, Grid, TextField, FormControl, FormControlLabel, Switch,
 InputLabel,Select,MenuItem,Button } from '@mui/material';
@@ -12,6 +15,8 @@ const EmployeeProfile = () => {
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +28,12 @@ const EmployeeProfile = () => {
       }
       try {
         const response = await API.get(`/admin/user/${id}`);
-        setEmployee(response.data);
+        const fetchedData = response.data;
+        setEmployee({
+          ...fetchedData,
+          isAdmin: fetchedData.is_admin, // Assuming this is the correct property name
+          accountStatus: fetchedData.account_status // Assuming this is the correct property name
+        });
         setLoading(false);
       } catch (error) {
         console.error("Error fetching employee details:", error);
@@ -31,6 +41,7 @@ const EmployeeProfile = () => {
         setLoading(false);
       }
     };
+    
 
     fetchEmployee();
   }, [id]);
@@ -51,9 +62,44 @@ const EmployeeProfile = () => {
     navigate(`/employee-history/${id}`); // Using the employee's ID in the path
   }
   
+  const handleEditClick = () => {
+    setIsEditMode(!isEditMode);
+    
+  };
+  
+  const handleSaveChanges = async () => {
+    const employeeData = {
+      first_name: employee.first_name,
+      last_name: employee.last_name,
+      address: employee.address,
+      phone_number: employee.phone_number,
+      email: employee.email,
+      position: employee.position,
+      zipcode: employee.zipcode,
+      emergency_contract_name: employee.emergency_contract_name,
+      emergency_contract_surname: employee.emergency_contract_surname,
+      emergency_contract_telephone: employee.emergency_contract_telephone,
+      emergency_contract_relation: employee.emergency_contract_relation,
+      employeeid: employee.employeeid,
+      is_admin: employee.is_admin,
+      account_status: employee.account_status,
+      profile_image_url: employee.profile_image_url // Include if you have profile image update functionality
+    };
+  
+    try {
+      // Perform async request
+      const response = await API.post(`/admin/user/${id}`, employeeData);
+      setDialogOpen(true);
+      setIsEditMode(false);
+    } catch (error) {
+      console.error('Error saving changes:', error);
+    }
+  };
 
   
-  // ... rest of your component
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
 
   const handleInputChange = (event) => {
     setEmployee({ ...employee, [event.target.name]: event.target.value });
@@ -90,7 +136,8 @@ const EmployeeProfile = () => {
           mb: 2 
       }}>
       <Avatar src={employee.profilePicture || ''} sx={{ width: 122, height: 122, mb: 2 }} />
-      <Button variant="contained" onClick={handleEmployeeHistory}>History</Button>
+      <Button variant="contained" onClick={handleEmployeeHistory}>History</Button><br></br>
+      <Button variant="contained" onClick={handleEditClick}>Edit</Button>
     </Box>
 
       <Typography variant="h6">Personal Information</Typography>
@@ -104,6 +151,7 @@ const EmployeeProfile = () => {
             label="First Name"
             value={employee.first_name}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -115,6 +163,7 @@ const EmployeeProfile = () => {
             label="Last Name"
             value={employee.last_name}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -122,10 +171,11 @@ const EmployeeProfile = () => {
             margin="normal"
             required
             fullWidth
-            name="phone"
+            name="phone_number"
             label="Phone Number"
             value={employee.phone_number}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -137,6 +187,7 @@ const EmployeeProfile = () => {
             label="Address"
             value={employee.address}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -144,10 +195,11 @@ const EmployeeProfile = () => {
             margin="normal"
             required
             fullWidth
-            name="zipCode"
+            name="zipcode"
             label="Zip Code"
             value={employee.zipcode}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
       </Grid>
@@ -163,6 +215,7 @@ const EmployeeProfile = () => {
             label="Email"
             value={employee.email}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -174,6 +227,7 @@ const EmployeeProfile = () => {
             label="Employee ID"
             value={employee.employeeid}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -185,6 +239,7 @@ const EmployeeProfile = () => {
             label="Position"
             value={employee.position}
             onChange={handleInputChange}
+            disabled={!isEditMode}
           />
         </Grid>
       </Grid>
@@ -196,10 +251,11 @@ const EmployeeProfile = () => {
         margin="normal"
         required
         fullWidth
-        name="emergencyFirstName"
+        name="emergency_contract_name"
         label="First Name"
         value={employee.emergency_contract_name}
         onChange={handleInputChange}
+        disabled={!isEditMode}
       />
     </Grid>
     <Grid item xs={12} md={6}>
@@ -207,10 +263,11 @@ const EmployeeProfile = () => {
         margin="normal"
         required
         fullWidth
-        name="emergencyLastName"
+        name="emergency_contract_surname"
         label="Last Name"
         value={employee.emergency_contract_surname}
         onChange={handleInputChange}
+        disabled={!isEditMode}
       />
     </Grid>
     <Grid item xs={12} md={6}>
@@ -218,20 +275,22 @@ const EmployeeProfile = () => {
         margin="normal"
         required
         fullWidth
-        name="emergencyPhone"
+        name="emergency_contract_telephone"
         label="Phone Number"
         value={employee.emergency_contract_telephone}
         onChange={handleInputChange}
+        disabled={!isEditMode}
       />
     </Grid>
     <Grid item xs={12} md={6}>
       <TextField
         margin="normal"
         fullWidth
-        name="emergencyRelation"
+        name="emergency_contract_relation"
         label="Relation"
         value={employee.emergency_contract_relation}
         onChange={handleInputChange}
+        disabled={!isEditMode}
       />
     </Grid>
         {/* Add Emergency Contact fields here, similar to the above pattern */}
@@ -245,6 +304,7 @@ const EmployeeProfile = () => {
           name="accountStatus"
           value={employee.accountStatus || ''} // Default to empty string if not available
           onChange={handleInputChange}
+          disabled={!isEditMode}
           style={{ backgroundColor: getStatusColor(employee.accountStatus) }}
         >
           <MenuItem value="Active">Active</MenuItem>
@@ -258,15 +318,28 @@ const EmployeeProfile = () => {
       <FormControlLabel
         control={
           <Switch
-            checked={employee.isAdmin || false} // Default to false if not available
-            onChange={handleToggleChange}
-            name="isAdmin"
-          />
+          checked={employee.isAdmin || false}
+          onChange={handleToggleChange}
+          name="isAdmin" // Make sure this matches the state property name
+          disabled={!isEditMode}
+        />
         }
         label={employee.isAdmin ? "Admin" : "Regular User"}
       />
 
       </Paper>
+      {isEditMode && (
+        <Button alignItems="right" variant="contained" color="primary" onClick={handleSaveChanges}>
+          Save Changes
+        </Button>
+      )}
+
+        <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Information Saved</DialogTitle>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
 );
 

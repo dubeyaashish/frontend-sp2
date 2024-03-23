@@ -13,7 +13,7 @@ import API from './api';
 
 const drawerWidth = 240;
 
-export default function UserNavigation({ open }) {
+export default function UserNavigation({ open, onLogout}) {
   const [activeItem, setActiveItem] = useState(null);
   const navigate = useNavigate();
 
@@ -23,6 +23,7 @@ export default function UserNavigation({ open }) {
   };
 
   const handleLogOut = () => {
+    onLogout(); // Call the onLogout prop
     navigate('/login');
   };
 
@@ -51,21 +52,17 @@ export default function UserNavigation({ open }) {
             <ListItemIcon><DashboardIcon /></ListItemIcon>
             <ListItemText primary="General" />
           </ListItem>
-          <ListItem button onClick={() => handleItemClick('/userprofile')} sx={{ bgcolor: activeItem === '/userprofile' ? '#F0B869' : 'inherit' }}>
+          <ListItem button onClick={() => handleItemClick('/user-profile')} sx={{ bgcolor: activeItem === '/user-profile' ? '#F0B869' : 'inherit' }}>
             <ListItemIcon><AccountCircleIcon /></ListItemIcon>
             <ListItemText primary="Profile" />
           </ListItem>
-          <ListItem button onClick={() => handleItemClick('/userhistory')} sx={{ bgcolor: activeItem === '/userhistory' ? '#F0B869' : 'inherit' }}>
+          <ListItem button onClick={() => handleItemClick('/user-history')} sx={{ bgcolor: activeItem === '/user-history' ? '#F0B869' : 'inherit' }}>
             <ListItemIcon><HistoryIcon /></ListItemIcon>
             <ListItemText primary="History" />
           </ListItem>
         </List>
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
           <List>
-            <ListItem button onClick={() => handleItemClick('/useraccount')} sx={{ bgcolor: activeItem === '/useraccount' ? '#F0B869' : 'inherit' }}>
-              <ListItemIcon><AccountCircleIcon /></ListItemIcon>
-              <ListItemText primary="Account" />
-            </ListItem>
             <ListItem button onClick={handleLogOut}>
               <ListItemIcon><PowerSettingsNewIcon /></ListItemIcon>
               <ListItemText primary="Log Out" />

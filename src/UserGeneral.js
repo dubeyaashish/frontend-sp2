@@ -1,46 +1,68 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Avatar, Typography, IconButton, LinearProgress, Grid, Container
+  Avatar, Typography, LinearProgress, Grid, Container, Pagination
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import axios from 'axios';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import API from './api';
 
 const UserGeneralPage = () => {
   const [userProfile, setUserProfile] = useState(null);
-  const [weeklyData, setWeeklyData] = useState([]);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [employeeData, setEmployeeData] = useState([]);
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 5;
 
   useEffect(() => {
-    // Fetch user profile data using the centralized API
-    API.get('/profile')
-      .then(response => {
-        setUserProfile(response.data);
-      })
-      .catch(error => {
-        console.error("Error fetching profile:", error);
-      });
-
-    // Fetch weekly data using the centralized API
-    API.get('/admin/user') // Adjust this endpoint as needed
-      .then(response => {
-        // Process the data as needed, possibly filtering for the specific user
-        setWeeklyData(response.data);
-      })
-      .catch(error => {
-        console.error("Error fetching user data:", error);
-      });
+    const auth = getAuth();
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        API.get(`/admin/checkin`) // Fetch all check-in data
+          .then(response => {
+            // Filter data for the logged-in user by comparing uid
+            const userCheckIns = response.data.filter(checkIn => checkIn.id === user.uid);
+            setAttendanceData(userCheckIns);
+          })
+          .catch(error => console.error("Error fetching check-in data:", error));
+        
+        API.get('/profile')
+          .then(response => setUserProfile(response.data))
+          .catch(error => console.error("Error fetching profile:", error));
+      }
+    });
   }, []);
 
-  // Mock data for work statistics
-  const workStatistics = {
-    totalDays: 20,
-    present: 19,
-    late: 1,
-    absent: 1
+  //table
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
   };
 
-  return (
+  const indexOfLastRow = page * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentRows = attendanceData.slice(indexOfFirstRow, indexOfLastRow);
+
+
+  //dashboard
+  const calculateAttendanceStats = () => {
+    const currentDate = new Date();
+    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const filteredAttendance = attendanceData.filter(data =>
+      new Date(data.date) >= firstDayOfMonth
+    );
+
+    const totalDays = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+    const presentCount = filteredAttendance.length;
+    const lateCount = filteredAttendance.filter(data => data.is_late).length;
+    const earlyLeaveCount = filteredAttendance.filter(data => data.is_early).length;
+    const absentCount = totalDays - presentCount;
+
+    return { totalDays, presentCount, lateCount, earlyLeaveCount, absentCount };
+  };
+
+
+  const { totalDays, presentCount, lateCount, earlyLeaveCount, absentCount } = calculateAttendanceStats();
+
+    return (
     <Box sx={{ pt: 2 }}>
       {/* Top bar with user info */}
       <Box sx={{
@@ -60,7 +82,7 @@ const UserGeneralPage = () => {
           gap: 1,
         }}>
           <Typography variant="subtitle1">
-            {userProfile ? `${userProfile.first_name} ${userProfile.last_name} | ${userProfile.position}` : 'Loading...'}
+            {userProfile ? `${userProfile.first_name} ${userProfile.last_name} | ${userProfile.employeeid}` : 'Loading...'}
           </Typography>
           <Avatar sx={{
             bgcolor: 'grey.200',
@@ -71,58 +93,64 @@ const UserGeneralPage = () => {
         </Box>
       </Box>
 
-      {/* Work Statistics Dashboard */}
       <Box sx={{ my: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Work Statistics
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Typography variant="body1">Total Days: {workStatistics.totalDays}</Typography>
-            <LinearProgress variant="determinate" value={100} />
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Work Statistics
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Typography variant="body1">Total Days: {totalDays}</Typography>
+              <LinearProgress variant="determinate" value={100} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Typography variant="body1">Present: {presentCount}</Typography>
+              <LinearProgress variant="determinate" value={(presentCount / totalDays) * 100} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Typography variant="body1">Late: {lateCount}</Typography>
+              <LinearProgress color="secondary" variant="determinate" value={(lateCount / totalDays) * 100} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Typography variant="body1">Early Leave: {earlyLeaveCount}</Typography>
+              <LinearProgress color="error" variant="determinate" value={(earlyLeaveCount / totalDays) * 100} />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Typography variant="body1">Absent: {absentCount}</Typography>
+              <LinearProgress color="error" variant="determinate" value={(absentCount / totalDays) * 100} />
+            </Grid>
           </Grid>
-          <Grid item xs={12}>
-            <Typography variant="body1">Present: {workStatistics.present}</Typography>
-            <LinearProgress variant="determinate" value={(workStatistics.present / workStatistics.totalDays) * 100} />
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="body1">Late: {workStatistics.late}</Typography>
-            <LinearProgress color="secondary" variant="determinate" value={(workStatistics.late / workStatistics.totalDays) * 100} />
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="body1">Absent: {workStatistics.absent}</Typography>
-            <LinearProgress color="error" variant="determinate" value={(workStatistics.absent / workStatistics.totalDays) * 100} />
-          </Grid>
-        </Grid>
-      </Box>
+        </Box>  
 
-      {/* Mockup table */}
-      <TableContainer component={Paper} sx={{ mt: 2 }}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>User</TableCell>
-            <TableCell>Position</TableCell>
-            <TableCell>Account Status</TableCell>
-            <TableCell>Check In</TableCell>
-            <TableCell>Check Out</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {weeklyData.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell component="th" scope="row">
-                {row.user}
-              </TableCell>
-              <TableCell>{row.position}</TableCell>
-              <TableCell>{row.accountStatus}</TableCell>
-              <TableCell>{row.checkIn}</TableCell>
-              <TableCell>{row.checkOut}</TableCell>
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+        <Table sx={{ minWidth: 650 }} aria-label="attendance table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Date</TableCell>
+              <TableCell>Check In</TableCell>
+              <TableCell>Check Out</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {currentRows.map((row, index) => (
+              <TableRow key={index}>
+                <TableCell>{row.date}</TableCell>
+                <TableCell>{row.checkedIn}</TableCell>
+                <TableCell>{row.checkedOut}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Pagination */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+        <Pagination 
+          count={Math.ceil(attendanceData.length / rowsPerPage)} 
+          page={page} 
+          onChange={handleChangePage}
+          color="primary"
+        />
+      </Box>
       </Box>
   );
 };

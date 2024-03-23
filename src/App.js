@@ -7,6 +7,8 @@ import StatusPage from "./Status";
 import SettingsPage from "./Settings";
 import LoginPage from "./Login";
 import UserGeneralPage from "./UserGeneral";
+import UserProfilePage from "./UserProfile";
+import UserHistoryPage from "./UserHistory";
 import AccountPage from "./Account";
 import CreateAccount from "./CreateAccount";
 import EmployeePage from "./Employees";
@@ -29,6 +31,8 @@ import {
   doc,
 } from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import API, { setAuthToken } from './api'; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyCAP8DRvSdpG7B0D0Y2PXOONlhtDo1JxZQ",
@@ -51,6 +55,21 @@ export default function App() {
   const [userRole, setUserRole] = useState(null); // Add this line
   const navigate = useNavigate(); // Add thi
 
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   if (token) {
+  //     setAuthToken(token);
+  //     setIsLoggedIn(true);
+  //     setUserRole('admin'); // Adjust based on your user role logic
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (!isLoggedIn) {
+  //     navigate('/login'); // Redirects to login page if not logged in
+  //   }
+  // }, [isLoggedIn, navigate]);
+
   const handleLoginSuccess = (isAdmin) => {
     setIsLoggedIn(true);
     setUserRole(isAdmin ? 'admin' : 'client'); // Set the user role based on isAdmin
@@ -60,20 +79,23 @@ export default function App() {
   
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
-    setUserRole(null); // Reset the user role on logout
+    setUserRole(null);
   };
+  
+
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
-  
+
 
   return (
     
     <div>
-      {isLoggedIn ? (
+      {isLoggedIn ? ( 
         userRole === 'admin' ? (
         <LayoutWithNavigation
           open={drawerOpen}
@@ -96,12 +118,13 @@ export default function App() {
         <LayoutWithUserNavigation
               open={drawerOpen}
               handleDrawerToggle={toggleDrawer}
-              onLogout={handleLogout}
+              onLogout={handleLogout} // 
 
             >
               <Routes>
               <Route path="/user-general" element={<UserGeneralPage />} />
-              {/* <Route path="/user-profile" element={<UserProfilePage />} /> */}
+              <Route path="/user-profile" element={<UserProfilePage />} />
+              <Route path="/user-history" element={<UserHistoryPage />} />
               {/* <Route path="/user-history" element={<UserHistoryPage />} /> */}
               {/* <Route path="/user-account" element={<UserAccountPage />} /> */}
               </Routes>

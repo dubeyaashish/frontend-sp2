@@ -3,14 +3,14 @@ import UserNavigation from './UserNavigation';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 
-const drawerWidth = 240;
+const drawerWidth = 50;
 const contentShift = 60;
 
-export default function LayoutWithUserNavigation({ children, open, handleDrawerToggle }) {
+export default function LayoutWithUserNavigation({ children, open, handleDrawerToggle, onLogout }) {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <UserNavigation open={open} handleDrawerToggle={handleDrawerToggle} />
+      <UserNavigation open={open} handleDrawerToggle={handleDrawerToggle} onLogout={onLogout} />
       <Box
         component="main"
         sx={{
@@ -20,7 +20,7 @@ export default function LayoutWithUserNavigation({ children, open, handleDrawerT
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
-          marginLeft: `${open ? drawerWidth : 0}px`,
+          marginLeft: `${open ? drawerWidth : 50}px`,
         }}
       >
         {children}
