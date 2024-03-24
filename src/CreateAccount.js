@@ -1,12 +1,16 @@
-  import React, { useState, useRef,  } from 'react';
+  import React, { useState, useRef, useEffect  } from 'react';
   import { Box, Container, TextField, Button, Typography, FormControl, InputLabel, Select, MenuItem, Grid, Avatar,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,FormControlLabel,Switch } from '@mui/material';
   import { useNavigate } from 'react-router-dom';
   import { styled } from '@mui/material/styles';
   import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
   import axios from 'axios';
+  import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import firebaseConfig from './firebase/config';
 
-
+initializeApp(firebaseConfig);  // Only if not already initialized elsewhere
+const firestore = getFirestore();
   const positions = [
     "Manager", "Assistant", "Engineer", "Developer", "Designer", "Accountant",
     "HR Coordinator", "Sales Representative", "Marketing Specialist", "Product Manager",
@@ -16,6 +20,8 @@
 
   const CreateAccount = () => {
     const navigate = useNavigate();
+    const [configList, setConfigList] = useState([]);
+    const [selectedConfig, setSelectedConfig] = useState('');
     const [account, setAccount] = useState({
       firstName: '',
       lastName: '',
@@ -32,7 +38,27 @@
       accountStatus: '',
       profilePicture: '',
       isAdmin:  false,
+      config_id: selectedConfig, 
     });
+
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const configsCollectionRef = collection(firestore, 'Config');
+          const configsSnapshot = await getDocs(configsCollectionRef);
+          const configsList = configsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setConfigList(configsList);
+        } catch (error) {
+          console.error('Error fetching config data:', error);
+        }
+      };
+  
+      fetchData();
+    }, []);
+
+    const handleConfigChange = (event) => {
+      setSelectedConfig(event.target.value);
+    };
 
     const generateEmployeeId = () => {
       return `${Date.now() % 1000000}`; // Example format: EMP1617109876235
@@ -132,41 +158,26 @@
         employeeid: account.employeeId,
         account_status: account.accountStatus,
         is_admin: account.isAdmin,
+        config_id: selectedConfig, // Add the selectedConfig here
+        // ...other fields if necessary
       };
     
       try {
         const token = localStorage.getItem('token');
-  
+    
         const response = await axios.post('https://senior2-test.vercel.app/register', employeeData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-  
+    
         if (response.status === 201) {
-          setOpenDialog(true);
-          setAccount({
-            firstName: '',
-            lastName: '',
-            phone: '',
-            address: '',
-            zipCode: '',
-            email: '',
-            employeeId: '',
-            position: '',
-            emergencyFirstName: '',
-            emergencyLastName: '',
-            emergencyPhone: '',
-            emergencyRelation: '',
-            accountStatus: '',
-            isAdmin: false,
-          });
+          setOpenDialog(true); 
         }
       } catch (error) {
         console.error("Error during registration: ", error.response || error);
       }
     };
-    
     <FormControl fullWidth margin="normal">
     <InputLabel id="position-label">Position</InputLabel>
     <Select
@@ -274,16 +285,20 @@
       />
     </Grid>
     <Grid item xs={12} md={6}>
-      <TextField
-        margin="normal"
-        required
-        fullWidth
-        name="position"
-        label="Position"
-        value={account.position}
-        onChange={handleInputChange}
-      />
-    </Grid>
+  <FormControl fullWidth margin="normal">
+    <InputLabel id="position-label">Position</InputLabel>
+    <Select
+      labelId="position-label"
+      name="position"
+      value={account.position}
+      onChange={handleInputChange}
+    >
+      {positions.map((position, index) => (
+        <MenuItem key={index} value={position}>{position}</MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
   </Grid>
 
   <Typography variant="h6" sx={{ mt: 2 }}>Emergency Contact</Typography>
@@ -348,6 +363,24 @@
                   <MenuItem value="Dismissed">Dismissed</MenuItem>
                   <MenuItem value="Suspended">Suspended</MenuItem>
               </Select>
+
+              <Typography variant="h6" sx={{ mt: 2 }}>Set Time</Typography>
+        <FormControl fullWidth margin="normal">
+          <InputLabel id="config-select-label">Configuration</InputLabel>
+          <Select
+            labelId="config-select-label"
+            id="config-select"
+            value={selectedConfig}
+            label="Configuration"
+            onChange={handleConfigChange}
+          >
+            {configList.map((config, index) => (
+              <MenuItem key={index} value={config.id}>
+                Start: {config.startWork} {config.startDay}, End: {config.endWork} {config.endDay}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
               <Typography variant="h6" sx={{ mt: 2 }}>Admin</Typography>
               <FormControlLabel
