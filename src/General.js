@@ -322,7 +322,6 @@ const GeneralPage = () => {
         {currentEmployees.map((employee, index) => (
     <TableRow key={index}>
       <TableCell component="th" scope="row" sx={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar sx={{ mr: 2, width: 24, height: 24 }} src={employee.faceAdded ? `URL_TO_PROFILE_PICTURE/${employee.employeeid}` : `URL_TO_PLACEHOLDER_IMAGE`}/>
         {employee.name}
       </TableCell>
       <TableCell>{employee.employeeid}</TableCell>

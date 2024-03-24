@@ -77,12 +77,23 @@ const SettingsPage = () => {
       const response = await API.post('/setting', config);
       if (response.status === 201) {
         alert('Config saved successfully');
-        // Optionally, fetch the new list of configs here if needed
+        fetchConfigs(); // Call the function to re-fetch configs
       } else {
         console.error('Failed to save config');
       }
     } catch (error) {
       console.error('Error saving config:', error);
+    }
+  };
+
+  const fetchConfigs = async () => {
+    try {
+      const configsCollectionRef = collection(firestore, 'Config');
+      const configsSnapshot = await getDocs(configsCollectionRef);
+      const configsList = configsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setConfigList(configsList);
+    } catch (error) {
+      console.error('Error fetching configs:', error);
     }
   };
 //Savingconfigtoemployee
@@ -188,15 +199,17 @@ const handleEmployeeSearch = (event, value) => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
         Select Configuration
       </Typography>
-          <Autocomplete
-      id="config-search"
-      options={configList}
-      getOptionLabel={(option) => option.id || ''}
-        onChange={handleConfigSelection}
-        renderInput={(params) => (
-          <TextField {...params} label="Select Config" />
-        )}
-      />
+      <Autocomplete
+  id="config-search"
+  options={configList}
+  getOptionLabel={(option) => {
+    return `Start: ${option.startWork} ${option.startDay}, End: ${option.endWork} ${option.endDay}`;
+  }}
+  onChange={handleConfigSelection}
+  renderInput={(params) => (
+    <TextField {...params} label="Select Config" />
+  )}
+/>
 
       {/* Employee selection */}
       <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
