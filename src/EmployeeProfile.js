@@ -82,8 +82,7 @@ const EmployeeProfile = () => {
       emergency_contract_relation: employee.emergency_contract_relation,
       employeeid: employee.employeeid,
       is_admin: employee.is_admin,
-      account_status: employee.account_status,
-      profile_image_url: employee.profile_image_url // Include if you have profile image update functionality
+      account_status: employee.account_status,// Include if you have profile image update functionality
     };
   
     try {

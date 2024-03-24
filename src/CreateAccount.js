@@ -138,7 +138,7 @@
       try {
         const token = localStorage.getItem('token');
   
-        const response = await axios.post('http://localhost:3001/register', employeeData, {
+        const response = await axios.post('https://senior2-test.vercel.app/register', employeeData, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
