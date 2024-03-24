@@ -2,7 +2,7 @@
 
 import axios from 'axios';
 
-const API = axios.create({ baseURL: 'http://localhost:3001' });
+const API = axios.create({ baseURL: 'https://senior2-test-5dw6rmhvu-bhuwadit1179s-projects.vercel.app' });
 
 export const setAuthToken = token => {
   if (token) {

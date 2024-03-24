@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Paper, Typography, TextField, MenuItem,
-  FormControl, InputLabel, Select, Button, Grid, Autocomplete,
-  Card,CardContent,CardActions,IconButton
+  FormControl, InputLabel, Select, Button, Grid,
+  Card, CardContent, CardActions, IconButton, Autocomplete
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 import API from './api';
+import CloseIcon from '@mui/icons-material/Close';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import firebaseConfig from './firebase/config';
+
+initializeApp(firebaseConfig);  // Only if not already initialized elsewhere
+const firestore = getFirestore();
 
 const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -14,27 +20,30 @@ const SettingsPage = () => {
   const [endTime, setEndTime] = useState('17:00');
   const [startDay, setStartDay] = useState('Monday');
   const [endDay, setEndDay] = useState('Friday');
+  const [selectedConfig, setSelectedConfig] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [employeeList, setEmployeeList] = useState([]);
-  const [savedEmployees, setSavedEmployees] = useState([])
-  const removeEmployee = (id) => {
-    setSavedEmployees(savedEmployees.filter(employee => employee.id !== id));
-  };
+  const [configList, setConfigList] = useState([]);
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await API.get('/admin/user'); // Using Axios instance
-        setEmployeeList(response.data); // Assuming the response data is an array of employees
-      } catch (error) {
-        console.error('Error fetching employees:', error);
-      }
-    };
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const configsCollectionRef = collection(firestore, 'Config');
+          const configsSnapshot = await getDocs(configsCollectionRef);
+          const configsList = configsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+          // Assuming you have an API endpoint to fetch employees
+          const employeeResponse = await API.get('/admin/user');
+          setEmployeeList(employeeResponse.data);
+          setConfigList(configsList);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+  
+      fetchData();
+    }, []);
 
-    fetchEmployees();
-  }, []);
-
-  // Handlers
   const handleStartTimeChange = (event) => {
     setStartTime(event.target.value);
   };
@@ -50,40 +59,64 @@ const SettingsPage = () => {
   const handleEndDayChange = (event) => {
     setEndDay(event.target.value);
   };
+//Savingconfig
+  const handleConfigSave = async () => {
+    if (!startTime || !endTime || !startDay || !endDay) {
+      alert('Please fill all the settings fields before saving.');
+      return;
+    }
 
-  const handleEmployeeSearch = (event, value) => {
-    setSelectedEmployees(value);
+    const config = {
+      startWork: startTime,
+      endWork: endTime,
+      startDay,
+      endDay
+    };
+    // Assuming you have an API instance set up and the '/setting' endpoint exists
+    try {
+      const response = await API.post('/setting', config);
+      if (response.status === 201) {
+        alert('Config saved successfully');
+        // Optionally, fetch the new list of configs here if needed
+      } else {
+        console.error('Failed to save config');
+      }
+    } catch (error) {
+      console.error('Error saving config:', error);
+    }
   };
+//Savingconfigtoemployee
+const handleConfigSelection = (event, value) => {
+  setSelectedConfig(value ? value.id : '');
+};
 
-  const handleSettingsChange = async () => {
-  //   // Construct the settings object
-  //   const settings = {
-  //     startTime,
-  //     endTime,
-  //     startDay,
-  //     endDay,
-  //     selectedEmployees // Assuming you only need the employee IDs
-  //   };
-  //   try {
-  //     // Replace '/admin/settings' with the correct endpoint for your backend
-  //     const response = await API.post('/admin/settings', settings);
-  //     if (response.status === 200) {
-  //       setSavedEmployees(selectedEmployees);
-  //       alert('Settings saved successfully');
-  //     } else {
-  //       alert('Failed to save settings');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error saving settings:', error);
-  //     alert('An error occurred while saving settings');
-  //   }
-  // };
+const handleEmployeeConfigAssignment = async () => {
+  if (!selectedConfig || selectedEmployees.length === 0) {
+    alert('Please select a config and at least one employee.');
+    return;
+  }
+  
+  const updates = selectedEmployees.map(employee => ({
+    id: employee.id,
+    config_id: selectedConfig
+  }));
 
-    // Mock the saving of settings
-    setSavedEmployees(selectedEmployees);
-    // Normally here you would send the data to your backend
-    console.log('Settings saved:', { startTime, endTime, startDay, endDay, selectedEmployees });
-  };
+  try {
+    const response = await API.put('/updateconfig', updates);
+    if (response.status === 200) {
+      alert('Config assigned to employees successfully');
+    } else {
+      console.error('Failed to assign config');
+    }
+  } catch (error) {
+    console.error('Error assigning config:', error);
+  }
+};
+
+const handleEmployeeSearch = (event, value) => {
+  setSelectedEmployees(value);
+};
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Typography variant="h5" gutterBottom>
@@ -147,9 +180,27 @@ const SettingsPage = () => {
           </Grid>
         </Grid>
       </Paper>
+      <Box mt={2} display="flex" justifyContent="flex-end">
+        <Button variant="contained" onClick={handleConfigSave}>
+          Save Config
+        </Button>
+      </Box>
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+        Select Configuration
+      </Typography>
+          <Autocomplete
+      id="config-search"
+      options={configList}
+      getOptionLabel={(option) => option.id || ''}
+        onChange={handleConfigSelection}
+        renderInput={(params) => (
+          <TextField {...params} label="Select Config" />
+        )}
+      />
 
+      {/* Employee selection */}
       <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Employees
+        Assign to Employees
       </Typography>
       <Autocomplete
         multiple
@@ -158,45 +209,17 @@ const SettingsPage = () => {
         getOptionLabel={(option) => `${option.first_name} ${option.last_name}`}
         onChange={handleEmployeeSearch}
         renderInput={(params) => (
-          <TextField {...params} label="Select Employees" placeholder="Search..." />
+          <TextField {...params} label="Select Employees" />
         )}
-
-        
       />
-            <Box mt={2} display="flex" justifyContent="flex-end">
-        <Button variant="contained" onClick={handleSettingsChange}>Save Changes</Button>
+
+      {/* Save button for config assignment */}
+      <Box mt={2} display="flex" justifyContent="flex-end">
+        <Button variant="contained" onClick={handleEmployeeConfigAssignment}>
+          Assign Config to Employees
+        </Button>
       </Box>
-      {/* Display saved employees in square cards */}
-      <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-        {savedEmployees.map((employee) => (
-          <Card key={employee.id} sx={{
-            width: 128, // This width and height make the card square
-            height: 128,
-            position: 'relative',
-            '&:hover .close-icon': {
-              display: 'block',
-            }
-          }}>
-            <CardContent>
-              <Typography variant="h6" sx={{ fontSize: 14 }}>
-                {employee.workingHours}
-              </Typography>
-              <Typography variant="body2">
-                {`${employee.first_name} ${employee.last_name}`}
-              </Typography>
-            </CardContent>
-            <CardActions sx={{ position: 'absolute', top: 0, right: 0 }}>
-              <IconButton 
-                className="close-icon"
-                sx={{ display: 'none' }}
-                onClick={() => removeEmployee(employee.id)}
-              >
-                <CloseIcon />
-              </IconButton>
-            </CardActions>
-          </Card>
-        ))}
-      </Box>
+
     </Box>
   );
 };

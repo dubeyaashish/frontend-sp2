@@ -27,7 +27,7 @@ function LoginPage({ onLoginSuccess }) {
       setAuthToken(token);
       localStorage.setItem('token', token);
 
-      const profileResponse = await axios.get('http://localhost:3001/profile', {
+      const profileResponse = await axios.get('https://senior2-test-5dw6rmhvu-bhuwadit1179s-projects.vercel.app/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
         
       });
