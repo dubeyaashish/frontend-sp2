@@ -130,7 +130,6 @@
         emergency_contract_telephone: account.emergencyPhone,
         emergency_contract_relation: account.emergencyRelation,
         employeeid: account.employeeId,
-        profilePicture: account.profilePicture,
         account_status: account.accountStatus,
         is_admin: account.isAdmin,
       };
@@ -160,7 +159,6 @@
             emergencyPhone: '',
             emergencyRelation: '',
             accountStatus: '',
-            profilePicture: '',
             isAdmin: false,
           });
         }
@@ -190,23 +188,7 @@
           <Typography variant="h4" gutterBottom>
             Create Account
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-              <Avatar
-                src={account.profilePicture ? account.profilePicture : ''}
-                sx={{ width: 122, height: 122, marginRight: 2, cursor: 'pointer' }}
-                onClick={triggerFileInput}
-              />
-              <input
-                type="file"
-                hidden
-                onChange={handleImageChange}
-                ref={fileInputRef}
-              />
-            </Box>
-
-
-      
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>      
         <Typography variant="h6">Personal Information</Typography>
         <Grid container spacing={2}>
         <Grid item xs={12} md={6}>
