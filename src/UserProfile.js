@@ -63,17 +63,6 @@ const UserProfilePage = () => {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>User Details</Typography>
       <Paper sx={{ p: 2 }}>
-        <Box sx={{
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          mb: 2 
-        }}>
-          <Avatar src={userProfile.profilePicture || ''} sx={{ width: 122, height: 122, mb: 2 }} />
-          {/* Buttons like 'History' or 'Edit' can be added here if relevant */}
-        </Box>
-  
         <Typography variant="h6">Personal Information</Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
